@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">DailyBloom</string>
+    <string name="add_habit_description">add new habit</string>
+    <string name="previous_week">Previous week</string>
+    <string name="next_week">Next week</string>
+    <string name="sun">SUN</string>
+    <string name="mon">MON</string>
+    <string name="button_back">back</string>
+
+</resources>
