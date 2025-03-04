@@ -62,22 +62,17 @@
 
                 <!-- Радиокнопки для выбора типа -->
                 <RadioButton
-                    android:id="@+id/rbHabitType1"
+                    android:id="@+id/rbHabitGood"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Тип 1" />
+                    android:text="Good" />
 
                 <RadioButton
-                    android:id="@+id/rbHabitType2"
+                    android:id="@+id/rbHabitBad"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Тип 2" />
+                    android:text="Bad" />
 
-                <RadioButton
-                    android:id="@+id/rbHabitType3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Тип 3" />
             </RadioGroup>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -107,7 +102,8 @@
                 <Spinner
                     android:id="@+id/spinnerFrequencyUnit"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:entries="@array/periodicity_options"/>
             </LinearLayout>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -124,7 +120,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:entries="@array/priority_levels" />
+            android:entries="@array/priority_levels"
+            android:prompt="@string/select_priority"/>
 
         <!-- Выбор цвета привычки -->
         <TextView
@@ -139,7 +136,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:entries="@array/color_options" />
+            android:entries="@array/color_names"
+            android:prompt="@string/select_color" />
 
         <!-- Кнопка для сохранения привычки -->
         <Button

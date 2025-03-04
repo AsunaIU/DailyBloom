@@ -5,32 +5,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ActivityHabitTracker">
+    tools:context=".view.ActivityHabitTracker">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
-<!--        &lt;!&ndash; Вставка календаря &ndash;&gt;-->
-<!--        <include layout="@layout/activity_week_view"/>-->
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="Add a habit"
-            android:textSize="25dp"
-            android:gravity="center"/>
-
-        <!-- Список привычек -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvSchedule"
+        <LinearLayout
+            android:id="@+id/llHabitsContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:padding="16dp" />
-
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
         </LinearLayout>
+
+    </ScrollView>
 
     <!-- Кнопка FAB -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -39,8 +28,8 @@
         android:layout_height="match_parent"
         android:layout_gravity="bottom|end"
         android:layout_margin="24dp"
+        android:contentDescription="@string/add_habit_description"
         android:src="@drawable/ic_plus"
-        app:backgroundTint="#71DEDB"
-        android:contentDescription="@string/add_habit_description"/>
+        app:backgroundTint="#71DEDB" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

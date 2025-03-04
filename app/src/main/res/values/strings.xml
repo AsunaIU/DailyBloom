@@ -7,4 +7,8 @@
     <string name="mon">MON</string>
     <string name="button_back">back</string>
 
+    <!-- Для Spinner prompt -->
+    <string name="select_priority">Choose priority</string>
+    <string name="select_color">Select color</string>
+
 </resources>
