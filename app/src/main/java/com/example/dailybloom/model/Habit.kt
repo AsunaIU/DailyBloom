@@ -3,10 +3,11 @@ package com.example.dailybloom.model
 import android.graphics.Color
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import java.util.UUID
 
 @Parcelize
 data class Habit(
-    val id: Long = System.currentTimeMillis(), // Добавляем ID
+    val id: String = UUID.randomUUID().toString(),
     var title: String = "",
     var description: String = "",
     var priority: String = "Medium",

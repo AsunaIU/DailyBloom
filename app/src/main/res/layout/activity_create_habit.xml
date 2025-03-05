@@ -6,12 +6,14 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
 
-        <!-- Заголовок экрана -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:orientation="vertical">
+
+        <!-- Заголовок -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -21,7 +23,7 @@
             android:gravity="center"
             android:layout_marginBottom="16dp" />
 
-        <!-- Поле для ввода названия привычки -->
+        <!-- Название -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -33,7 +35,7 @@
                 android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Поле для ввода описания привычки -->
+        <!-- Описание -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -43,9 +45,12 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etHabitDescription"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:minLines="3"/>
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Тип привычки -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilHabitType"
             android:layout_width="match_parent"
@@ -53,93 +58,267 @@
             android:hint="Тип"
             android:layout_marginTop="8dp">
 
-            <!-- RadioGroup для выбора типа привычки -->
+            <!-- RadioGroup для типа привычки -->
             <RadioGroup
                 android:id="@+id/rgHabitType"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_marginEnd="16dp">
 
-                <!-- Радиокнопки для выбора типа -->
                 <RadioButton
                     android:id="@+id/rbHabitGood"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Good" />
+                    android:text="Полезная" />
 
                 <RadioButton
                     android:id="@+id/rbHabitBad"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bad" />
+                    android:text="Вредная" />
 
             </RadioGroup>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Поле для ввода частоты выполнения привычки с единицей измерения -->
+        <!-- Частота выполнения привычки -->
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilHabitFrequency"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Частота"
-            android:layout_marginTop="8dp">
+            android:layout_marginTop="16dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <!-- Поле для ввода числа (количество раз) -->
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etHabitFrequency"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:inputType="number"
-                    android:hint="Число" />
+                    android:hint="Количество"/>
 
-                <!-- Spinner для выбора единицы измерения (например, "раз в день" или "раз в неделю") -->
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="раз(а) в"
+                    android:gravity="center"
+                    android:layout_marginStart="8dp"/>
+
                 <Spinner
                     android:id="@+id/spinnerFrequencyUnit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
                     android:entries="@array/periodicity_options"/>
             </LinearLayout>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Выбор приоритета привычки -->
-        <TextView
+        <!-- Приоритет -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Приоритет"
-            android:textSize="16sp"
-            android:layout_marginTop="16dp" />
+            android:hint="Приоритет"
+            android:layout_marginTop="16dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-        <Spinner
-            android:id="@+id/spinnerPriority"
+            <Spinner
+                android:id="@+id/spinnerPriority"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/priority_levels"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Горизонтальный ScrollView для выбора цвета -->
+        <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:entries="@array/priority_levels"
-            android:prompt="@string/select_priority"/>
+            android:layout_marginTop="16dp">
 
-        <!-- Выбор цвета привычки -->
-        <TextView
+            <LinearLayout
+                android:id="@+id/layoutColorContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <View
+                    android:id="@+id/viewColor1"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#F21E0E"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:id="@+id/viewColor2"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#E45A1F"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:id="@+id/viewColor3"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#F6CF40"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:id="@+id/viewColor4"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#B5E91D"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:id="@+id/viewColor5"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#4BFB96"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:id="@+id/viewColor6"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#36F4D4"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:id="@+id/viewColor7"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#15AEF0"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:id="@+id/viewColor8"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#1228F2"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:id="@+id/viewColor9"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#160589"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:id="@+id/viewColor10"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#0F043E"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:id="@+id/viewColor11"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#7216F0"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:id="@+id/viewColor12"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#DC65DE"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:id="@+id/viewColor13"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#7C0679"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:id="@+id/viewColor14"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#540339"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:id="@+id/viewColor15"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#EB35050A"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <View
+                    android:id="@+id/viewColor16"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="6.25dp"
+                    android:background="#420202"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
+
+        <!-- Отображение выбранного цвета и его значений -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Цвет"
-            android:textSize="16sp"
-            android:layout_marginTop="16dp" />
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical">
 
-        <Spinner
-            android:id="@+id/spinnerColor"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:entries="@array/color_names"
-            android:prompt="@string/select_color" />
+            <!-- Прямоугольник для отображения выбранного цвета -->
+            <View
+                android:id="@+id/selectedColorView"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="#FFFFFF" />
 
-        <!-- Кнопка для сохранения привычки -->
+            <!-- Текстовое поле для отображения значений RGB и HSV -->
+            <TextView
+                android:id="@+id/colorValuesTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="RGB: 255, 255, 255\nHSV: 0, 0, 1"
+                android:textSize="16sp" />
+        </LinearLayout>
+
         <Button
             android:id="@+id/btnSaveHabit"
             android:layout_width="match_parent"
