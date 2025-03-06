@@ -16,18 +16,10 @@ import com.example.dailybloom.viewmodel.HabitViewModelFactory
 
 class ActivityHabitTracker : AppCompatActivity(), HabitChangeListener {
 
-    private val repository = HabitRepositorySingleton.repository
-    private lateinit var viewModel: HabitViewModel
-    private lateinit var adapter: HabitAdapter
+    private val repository = HabitRepositorySingleton.repository // обращается к синглтону и получает экземпляр репозитория
+    private lateinit var viewModel: HabitViewModel               // переменная, созданая через фабрику
+    private lateinit var adapter: HabitAdapter                   // адаптер для RecyclerView, который отвечает за отображение списка привычек
     private lateinit var binding: ActivityHabitTrackerBinding
-
-    private val activityListener = object : HabitChangeListener {
-        override fun onHabitsChanged(habits: Map<String, Habit>) {
-            runOnUiThread {
-                updateHabitList(habits)
-            }
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,7 +69,7 @@ class ActivityHabitTracker : AppCompatActivity(), HabitChangeListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        repository.removeListener(activityListener)
+        repository.removeListener(this)
     }
 
     override fun onHabitsChanged(habits: Map<String, Habit>) {

@@ -1,5 +1,6 @@
 package com.example.dailybloom.view
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,7 @@ class HabitAdapter(
 ) : RecyclerView.Adapter<HabitAdapter.HabitViewHolder>() {
 
     private val items = mutableListOf<Habit>()
+
 
     fun submitList(newItems: List<Habit>) {
         items.clear()
@@ -37,14 +39,21 @@ class HabitAdapter(
     // Класс ViewHolder для обработки отдельного элемента привычки
     class HabitViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val title: TextView = itemView.findViewById(R.id.tvTitle)
+        private val priority: TextView = itemView.findViewById(R.id.tvPriority)
+        private val type: TextView = itemView.findViewById(R.id.tvType)
+        private val frequency: TextView = itemView.findViewById(R.id.tvFrequency)
         private val description: TextView = itemView.findViewById(R.id.tvDescription)
         private val colorIndicator: View = itemView.findViewById(R.id.colorIndicator)
 
         // Привязка объекта привычки к представлениям
+        @SuppressLint("SetTextI18n")
         fun bind(habit: Habit, onClick: (Habit) -> Unit) {
             title.text = habit.title
             description.text = habit.description
             colorIndicator.setBackgroundColor(habit.color)
+            priority.text = habit.priority
+            type.text = habit.type
+            frequency.text = "${habit.frequency} per ${habit.periodicity}"
             itemView.setOnClickListener { onClick(habit) }
         }
     }
