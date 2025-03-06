@@ -5,6 +5,8 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
+import android.view.View
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.core.view.children
@@ -64,6 +66,7 @@ class ActivityCreateHabit : AppCompatActivity(), HabitChangeListener {
         handleIntent()
         restoreState(savedInstanceState)
         setupUI()
+        setupColorPicker()
         setupSaveButton()
     }
 
@@ -123,6 +126,10 @@ class ActivityCreateHabit : AppCompatActivity(), HabitChangeListener {
             etHabitFrequency.setText(uiState.frequency)
             spinnerFrequencyUnit.setSelection(uiState.periodicityPos)
 
+            layoutColorContainer.post {
+                setupColorPicker()
+            }
+
             layoutColorContainer.children.forEach { colorView ->
                 colorView.setOnClickListener {
                     val color = (colorView.background as ColorDrawable).color
@@ -132,6 +139,51 @@ class ActivityCreateHabit : AppCompatActivity(), HabitChangeListener {
             }
 
             updateSelectedColorDisplay(uiState.selectedColor)
+        }
+    }
+
+    private fun setupColorPicker() {
+
+        val colorGradientView = binding.colorGradientView
+        val layoutColorContainer = binding.layoutColorContainer
+
+        layoutColorContainer.removeAllViews()
+
+        val squareSize = resources.getDimensionPixelSize(R.dimen.color_square_size)
+        val squareMargin = (squareSize * 0.25).toInt()
+
+        val squareCount = 16
+
+        val gradientWidth = colorGradientView.width
+        if (gradientWidth <= 0) {
+            colorGradientView.post {
+                setupColorPicker()
+            }
+            return
+        }
+
+        val step = gradientWidth / (squareCount + 1)
+
+        for (i in 0 until squareCount) {
+            val colorView = View(this)
+            val layoutParams = LinearLayout.LayoutParams(squareSize, squareSize)
+            layoutParams.setMargins(squareMargin, squareMargin, squareMargin, squareMargin)
+            colorView.layoutParams = layoutParams
+
+            val position = (i + 1) * step
+
+            val hue = (position.toFloat() / gradientWidth) * 360f
+            val hsv = floatArrayOf(hue, 1f, 1f)
+            val color = Color.HSVToColor(hsv)
+
+            colorView.setBackgroundColor(color)
+
+            colorView.setOnClickListener {
+                uiState = uiState.copy(selectedColor = color)
+                updateSelectedColorDisplay(color)
+            }
+
+            layoutColorContainer.addView(colorView)
         }
     }
 

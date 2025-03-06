@@ -133,166 +133,31 @@
                 android:entries="@array/priority_levels"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Горизонтальный ScrollView для выбора цвета -->
-        <HorizontalScrollView
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp">
 
-            <LinearLayout
-                android:id="@+id/layoutColorContainer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="16dp">
+            <!-- Градиентный фон -->
+            <com.example.dailybloom.view.ColorGradientView
+                android:id="@+id/colorGradientView"
+                android:layout_width="match_parent"
+                android:layout_height="50dp" />
 
-                <View
-                    android:id="@+id/viewColor1"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#F21E0E"
-                    android:clickable="true"
-                    android:focusable="true" />
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-                <View
-                    android:id="@+id/viewColor2"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#E45A1F"
-                    android:clickable="true"
-                    android:focusable="true" />
+                <LinearLayout
+                    android:id="@+id/layoutColorContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="12.5dp">
 
-                <View
-                    android:id="@+id/viewColor3"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#F6CF40"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <View
-                    android:id="@+id/viewColor4"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#B5E91D"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <View
-                    android:id="@+id/viewColor5"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#4BFB96"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <View
-                    android:id="@+id/viewColor6"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#36F4D4"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <View
-                    android:id="@+id/viewColor7"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#15AEF0"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <View
-                    android:id="@+id/viewColor8"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#1228F2"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <View
-                    android:id="@+id/viewColor9"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#160589"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <View
-                    android:id="@+id/viewColor10"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#0F043E"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <View
-                    android:id="@+id/viewColor11"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#7216F0"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <View
-                    android:id="@+id/viewColor12"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#DC65DE"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <View
-                    android:id="@+id/viewColor13"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#7C0679"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <View
-                    android:id="@+id/viewColor14"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#540339"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <View
-                    android:id="@+id/viewColor15"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#EB35050A"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <View
-                    android:id="@+id/viewColor16"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_margin="6.25dp"
-                    android:background="#420202"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-            </LinearLayout>
-
-        </HorizontalScrollView>
+                </LinearLayout>
+            </HorizontalScrollView>
+        </FrameLayout>
 
         <!-- Отображение выбранного цвета и его значений -->
         <LinearLayout
