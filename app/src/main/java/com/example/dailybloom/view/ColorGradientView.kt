@@ -19,17 +19,15 @@ class ColorGradientView @JvmOverloads constructor(
     private var colors: IntArray = IntArray(0)
 
     init {
-        // Create colors for the HSV spectrum
         generateHsvColorSpectrum()
     }
 
     private fun generateHsvColorSpectrum() {
-        // Generate colors across the hue spectrum (0-360 degrees)
         val colorCount = 360
         colors = IntArray(colorCount)
 
         for (i in 0 until colorCount) {
-            val hsv = floatArrayOf(i.toFloat(), 1f, 1f) // Full saturation and value
+            val hsv = floatArrayOf(i.toFloat(), 1f, 1f)
             colors[i] = Color.HSVToColor(hsv)
         }
     }
@@ -37,7 +35,6 @@ class ColorGradientView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        // Create a horizontal linear gradient for the HSV spectrum
         val gradient = LinearGradient(
             0f, 0f, width.toFloat(), 0f,
             colors, null, Shader.TileMode.CLAMP
@@ -45,7 +42,6 @@ class ColorGradientView @JvmOverloads constructor(
 
         paint.shader = gradient
 
-        // Draw the gradient background
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
     }
 }

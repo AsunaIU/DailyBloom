@@ -15,7 +15,6 @@ class HabitAdapter(
 
     private val items = mutableListOf<Habit>()
 
-
     fun submitList(newItems: List<Habit>) {
         items.clear()
         items.addAll(newItems)
@@ -36,7 +35,7 @@ class HabitAdapter(
 
     override fun getItemCount(): Int = items.size
 
-    // Класс ViewHolder для обработки отдельного элемента привычки
+    // Класс ViewHolder для обработки каждого элемента привычки
     class HabitViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val title: TextView = itemView.findViewById(R.id.tvTitle)
         private val priority: TextView = itemView.findViewById(R.id.tvPriority)

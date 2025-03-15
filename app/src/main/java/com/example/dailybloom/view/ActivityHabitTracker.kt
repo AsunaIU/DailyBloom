@@ -16,7 +16,7 @@ import com.example.dailybloom.viewmodel.HabitViewModelFactory
 
 class ActivityHabitTracker : AppCompatActivity(), HabitChangeListener {
 
-    private val repository = HabitRepositorySingleton.repository // обращается к синглтону и получает экземпляр репозитория
+    private val repository = HabitRepositorySingleton.repository // обращается к синглтону и получаем экземпляр репозитория
     private lateinit var viewModel: HabitViewModel               // переменная, созданая через фабрику
     private lateinit var adapter: HabitAdapter                   // адаптер для RecyclerView, который отвечает за отображение списка привычек
     private lateinit var binding: ActivityHabitTrackerBinding
