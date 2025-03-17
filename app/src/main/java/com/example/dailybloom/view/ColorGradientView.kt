@@ -1,5 +1,6 @@
 package com.example.dailybloom.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -32,9 +33,9 @@ class ColorGradientView @JvmOverloads constructor(
         }
     }
 
+    @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-
         val gradient = LinearGradient(
             0f, 0f, width.toFloat(), 0f,
             colors, null, Shader.TileMode.CLAMP

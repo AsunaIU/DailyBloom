@@ -8,33 +8,26 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dailybloom.databinding.ActivityHabitTrackerBinding
 import com.example.dailybloom.model.Habit
-import com.example.dailybloom.model.HabitChangeListener
-import com.example.dailybloom.model.HabitRepositorySingleton
-import com.example.dailybloom.viewmodel.HabitViewModel
-import com.example.dailybloom.viewmodel.HabitViewModelFactory
+import com.example.dailybloom.viewmodel.HabitListViewModel
 
 
-class ActivityHabitTracker : AppCompatActivity(), HabitChangeListener {
+class ActivityHabitTracker : AppCompatActivity() {
 
-    private val repository = HabitRepositorySingleton.repository // обращается к синглтону и получаем экземпляр репозитория
-    private lateinit var viewModel: HabitViewModel               // переменная, созданая через фабрику
-    private lateinit var adapter: HabitAdapter                   // адаптер для RecyclerView, который отвечает за отображение списка привычек
+    private lateinit var viewModel: HabitListViewModel
+    private lateinit var adapter: HabitAdapter
     private lateinit var binding: ActivityHabitTrackerBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val factory = HabitViewModelFactory(repository)
-        viewModel = ViewModelProvider(this, factory)[HabitViewModel::class.java]
+        viewModel = ViewModelProvider(this)[HabitListViewModel::class.java]
 
         binding = ActivityHabitTrackerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         setupRecyclerView()
         setupFAB()
-
-        updateHabitList(repository.getHabits())
-        repository.addListener(this)
+        observeViewModel()
     }
 
     private fun setupRecyclerView() {
@@ -62,17 +55,10 @@ class ActivityHabitTracker : AppCompatActivity(), HabitChangeListener {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        updateHabitList(repository.getHabits())
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        repository.removeListener(this)
-    }
-
-    override fun onHabitsChanged(habits: Map<String, Habit>) {
-        println("This")
+    private fun observeViewModel() {
+        viewModel.habits.observe(this) { habits ->
+            Log.d("ActivityHabitTracker", "Updating habit list with ${habits.size} items.")
+            updateHabitList(habits)
+        }
     }
 }

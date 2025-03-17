@@ -1,29 +1,21 @@
 package com.example.dailybloom.view
 
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
-import android.view.View
-import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import androidx.core.view.children
 import com.example.dailybloom.R
 import com.example.dailybloom.databinding.ActivityCreateHabitBinding
 import com.example.dailybloom.model.Habit
-import com.example.dailybloom.model.HabitChangeListener
-import com.example.dailybloom.model.HabitRepositorySingleton
-import com.example.dailybloom.viewmodel.HabitViewModel
-import com.example.dailybloom.viewmodel.HabitViewModelFactory
+import com.example.dailybloom.viewmodel.HabitEditViewModel
 import kotlinx.parcelize.Parcelize
 
 
-class ActivityCreateHabit : AppCompatActivity(), HabitChangeListener {
+class ActivityCreateHabit : AppCompatActivity() {
 
-    private val repository = HabitRepositorySingleton.repository
-    private lateinit var viewModel: HabitViewModel
+    private lateinit var viewModel: HabitEditViewModel
     private lateinit var binding: ActivityCreateHabitBinding
     private var currentHabit: Habit? = null
 
@@ -48,26 +40,34 @@ class ActivityCreateHabit : AppCompatActivity(), HabitChangeListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val factory = HabitViewModelFactory(repository)
-        viewModel = ViewModelProvider(this, factory)[HabitViewModel::class.java]
+        viewModel = ViewModelProvider(this)[HabitEditViewModel::class.java]
 
         binding = ActivityCreateHabitBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        repository.addListener(this)
-
-        viewModel.habits.observe(this) { habits ->
-            Log.d(TAG, "Habits updated: ${habits.size} habits")
-            habits.forEach { (id, habit) ->
-                Log.d(TAG, "Habit: $id - ${habit.title}")
-            }
-        }
+//        viewModel.habits.observe(this) { habits ->
+//            Log.d(TAG, "Habits updated: ${habits.size} habits")
+//            habits.forEach { (id, habit) ->
+//                Log.d(TAG, "Habit: $id - ${habit.title}")
+//            }
+//        }
 
         handleIntent()
         restoreState(savedInstanceState)
         setupUI()
         setupColorPicker()
         setupSaveButton()
+        observeViewModel()
+    }
+
+    private fun observeViewModel() {
+        viewModel.selectedColor.observe(this) { color ->
+            binding.colorPicker.setSelectedColor(color)
+        }
+
+        viewModel.habits.observe(this) { habits ->
+            Log.d(TAG, "Habits updated: ${habits.size} habits")
+        }
     }
 
     private fun handleIntent() {
@@ -87,6 +87,7 @@ class ActivityCreateHabit : AppCompatActivity(), HabitChangeListener {
                     .indexOf(it.periodicity).coerceAtLeast(0),
                 selectedColor = it.color
             )
+            viewModel.selectColor(it.color)
         }
     }
 
@@ -98,24 +99,25 @@ class ActivityCreateHabit : AppCompatActivity(), HabitChangeListener {
     private fun restoreState(savedInstanceState: Bundle?) {
         savedInstanceState?.getParcelable<UIState>(KEY_UI_STATE)?.let {
             uiState = it
+            viewModel.selectColor(it.selectedColor)
         }
     }
 
-    private fun updateSelectedColorDisplay(color: Int) {
-        with(binding) {
-            selectedColorView.setBackgroundColor(color)
-
-            val red = Color.red(color)
-            val green = Color.green(color)
-            val blue = Color.blue(color)
-
-            val hsv = FloatArray(3)
-            Color.colorToHSV(color, hsv)
-            val hsvText = "HSV: %.1f°, %.1f%%, %.1f%%".format(hsv[0], hsv[1]*100, hsv[2]*100)
-
-            colorValuesTextView.text = "RGB: $red, $green, $blue\n$hsvText"
-        }
-    }
+//    private fun updateSelectedColorDisplay(color: Int) {
+//        with(binding) {
+//            selectedColorView.setBackgroundColor(color)
+//
+//            val red = Color.red(color)
+//            val green = Color.green(color)
+//            val blue = Color.blue(color)
+//
+//            val hsv = FloatArray(3)
+//            Color.colorToHSV(color, hsv)
+//            val hsvText = "HSV: %.1f°, %.1f%%, %.1f%%".format(hsv[0], hsv[1]*100, hsv[2]*100)
+//
+//            colorValuesTextView.text = "RGB: $red, $green, $blue\n$hsvText"
+//        }
+//    }
 
     private fun setupUI() {
         with(binding) {
@@ -125,65 +127,13 @@ class ActivityCreateHabit : AppCompatActivity(), HabitChangeListener {
             rgHabitType.check(uiState.typeId)
             etHabitFrequency.setText(uiState.frequency)
             spinnerFrequencyUnit.setSelection(uiState.periodicityPos)
-
-            layoutColorContainer.post {
-                setupColorPicker()
-            }
-
-            layoutColorContainer.children.forEach { colorView ->
-                colorView.setOnClickListener {
-                    val color = (colorView.background as ColorDrawable).color
-                    uiState = uiState.copy(selectedColor = color)
-                    updateSelectedColorDisplay(color)
-                }
-            }
-
-            updateSelectedColorDisplay(uiState.selectedColor)
         }
     }
 
     private fun setupColorPicker() {
-
-        val colorGradientView = binding.colorGradientView
-        val layoutColorContainer = binding.layoutColorContainer
-
-        layoutColorContainer.removeAllViews()
-
-        val squareSize = resources.getDimensionPixelSize(R.dimen.color_square_size)
-        val squareMargin = (squareSize * 0.25).toInt()
-
-        val squareCount = 16
-
-        val gradientWidth = colorGradientView.width
-        if (gradientWidth <= 0) {
-            colorGradientView.post {
-                setupColorPicker()
-            }
-            return
-        }
-
-        val step = gradientWidth / (squareCount + 1)
-
-        for (i in 0 until squareCount) {
-            val colorView = View(this)
-            val layoutParams = LinearLayout.LayoutParams(squareSize, squareSize)
-            layoutParams.setMargins(squareMargin, squareMargin, squareMargin, squareMargin)
-            colorView.layoutParams = layoutParams
-
-            val position = (i + 1) * step
-
-            val hue = (position.toFloat() / gradientWidth) * 360f
-            val hsv = floatArrayOf(hue, 1f, 1f)
-            val color = Color.HSVToColor(hsv)
-
-            colorView.setBackgroundColor(color)
-
-            colorView.setOnClickListener {
-                uiState = uiState.copy(selectedColor = color)
-                updateSelectedColorDisplay(color)
-            }
-
-            layoutColorContainer.addView(colorView)
+        binding.colorPicker.setOnColorSelectedListener { color ->
+            uiState = uiState.copy(selectedColor = color)
+            viewModel.selectColor(color)
         }
     }
 
@@ -212,40 +162,26 @@ class ActivityCreateHabit : AppCompatActivity(), HabitChangeListener {
     }
 
     private fun saveHabit() {
-        val habit = currentHabit?.copy(
+        val periodicity = resources.getStringArray(R.array.periodicity_options)
+            .getOrElse(uiState.periodicityPos) { "Day" }
+
+        val isGoodHabit = uiState.typeId == R.id.rbHabitGood
+
+        val frequency = uiState.frequency.toIntOrNull() ?: 1
+
+        val success = viewModel.createOrUpdateHabit(
+            currentHabitId = currentHabit?.id,
             title = uiState.title,
             description = uiState.description,
-            priority = when (uiState.priorityPos) {
-                0 -> "High"
-                1 -> "Medium"
-                else -> "Low"
-            },
-            type = if (uiState.typeId == R.id.rbHabitGood) "Good" else "Bad",
-            frequency = uiState.frequency.toIntOrNull() ?: 1,
-            periodicity = resources.getStringArray(R.array.periodicity_options)
-                .getOrElse(uiState.periodicityPos) { "Day" },
-            color = uiState.selectedColor
-        ) ?: Habit(
-            title = uiState.title,
-            description = uiState.description,
-            priority = when (uiState.priorityPos) {
-                0 -> "High"
-                1 -> "Medium"
-                else -> "Low"
-            },
-            type = if (uiState.typeId == R.id.rbHabitGood) "Good" else "Bad",
-            frequency = uiState.frequency.toIntOrNull() ?: 1,
-            periodicity = resources.getStringArray(R.array.periodicity_options)
-                .getOrElse(uiState.periodicityPos) { "Day" },
+            priorityPos = uiState.priorityPos,
+            isGoodHabit = isGoodHabit,
+            frequency = frequency,
+            periodicity = periodicity,
             color = uiState.selectedColor
         )
 
-        Log.d(TAG, "Saving habit: ${habit.title}")
-
-        if (currentHabit == null) {
-            viewModel.addHabit(habit)
-        } else {
-            viewModel.updateHabit(currentHabit!!.id, habit)
+        if (!success) {
+            Log.e(TAG, "Failed to save habit")
         }
     }
 
@@ -263,18 +199,6 @@ class ActivityCreateHabit : AppCompatActivity(), HabitChangeListener {
         }
         return isValid
     }
-
-    override fun onHabitsChanged(habits: Map<String, Habit>) {
-        runOnUiThread {
-            Log.d(TAG, "Habits Changed Callback: ${habits.size} habits")
-            habits.forEach { (id, habit) ->
-                Log.d(TAG, "Updated Habit: $id - ${habit.title}")
-            }
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        repository.removeListener(this)
-    }
 }
+
+

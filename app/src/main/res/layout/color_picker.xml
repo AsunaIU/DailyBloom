@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+<FrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp">
+
+    <!-- Градиентный фон -->
+    <com.example.dailybloom.view.ColorGradientView
+        android:id="@+id/colorGradientView"
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/layoutColorContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="12.5dp">
+        </LinearLayout>
+    </HorizontalScrollView>
+</FrameLayout>
+
+    <!-- Отображение выбранного цвета и его значений -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- Прямоугольник для отображения выбранного цвета -->
+        <View
+            android:id="@+id/selectedColorView"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:background="#FFFFFF" />
+
+        <!-- Текстовое поле для отображения значений RGB и HSV -->
+        <TextView
+            android:id="@+id/colorValuesTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="RGB: 255, 255, 255\nHSV: 0, 0, 1"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+</merge>

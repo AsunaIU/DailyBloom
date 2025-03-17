@@ -56,6 +56,7 @@ dependencies {
     // Room components
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.ui.graphics.android)
     ksp(libs.androidx.room.compiler)
 
     // Testing
