@@ -1,120 +1,125 @@
 package com.example.dailybloom.viewmodel
 
 import android.graphics.Color
+import android.os.Parcelable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.dailybloom.R
 import com.example.dailybloom.model.Habit
 import com.example.dailybloom.model.HabitChangeListener
 import com.example.dailybloom.model.HabitRepository
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+data class UIState(
+    val title: String = "",
+    val description: String = "",
+    val priorityPos: Int = 1,
+    val typeId: Int = R.id.rbHabitGood,
+    val frequency: String = "1",
+    val periodicityPos: Int = 0,
+    val selectedColor: Int = Color.WHITE
+) : Parcelable
+
 
 class HabitEditViewModel : ViewModel(), HabitChangeListener {
 
+    private val _uiState = MutableLiveData(UIState())
+    val uiState: LiveData<UIState> = _uiState
+
     private val _habits = MutableLiveData(HabitRepository.getHabits())
     val habits: LiveData<Map<String, Habit>> = _habits
-    private val _selectedColor = MutableLiveData<Int>()
-    val selectedColor: LiveData<Int> = _selectedColor
-
-    private val _colorOptions = MutableLiveData<List<Int>>()
-    val colorOptions: LiveData<List<Int>> = _colorOptions
-
-    private val _colorInfo = MutableLiveData<Pair<Int, String>>()
-    val colorInfo: LiveData<Pair<Int, String>> = _colorInfo
 
     init {
         HabitRepository.addListener(this)
-        _selectedColor.value = Color.BLUE
-        updateColorInfo(_selectedColor.value ?: Color.BLUE)
     }
 
-    fun addHabit(habit: Habit) {
-        HabitRepository.addHabit(habit)
+    fun setUIState(state: UIState) {
+        _uiState.value = state
     }
 
-    fun updateHabit(id: String, habit: Habit) {
-        HabitRepository.updateHabit(id, habit)
+    fun updateColor(color: Int) {
+        _uiState.value = _uiState.value?.copy(selectedColor = color)
     }
 
-    fun selectColor(color: Int) {
-        _selectedColor.value = color
-        updateColorInfo(color)
+    fun updateUIState(
+        title: String? = null,
+        description: String? = null,
+        priorityPos: Int? = null,
+        typeId: Int? = null,
+        frequency: String? = null,
+        periodicityPos: Int? = null
+    ) {
+        val current = _uiState.value ?: UIState()
+        _uiState.value = current.copy(
+            title = title ?: current.title,
+            description = description ?: current.description,
+            priorityPos = priorityPos ?: current.priorityPos,
+            typeId = typeId ?: current.typeId,
+            frequency = frequency ?: current.frequency,
+            periodicityPos = periodicityPos ?: current.periodicityPos
+        )
     }
 
-    private fun updateColorInfo(color: Int) {
-        val red = Color.red(color)
-        val green = Color.green(color)
-        val blue = Color.blue(color)
-
-        val hsv = FloatArray(3)
-        Color.colorToHSV(color, hsv)
-        val hsvText = "HSV: %.1f°, %.1f%%, %.1f%%".format(hsv[0], hsv[1]*100, hsv[2]*100)
-
-        val rgbText = "RGB: $red, $green, $blue"
-        val colorText = "$rgbText\n$hsvText"
-
-        _colorInfo.value = Pair(color, colorText)
+    fun validateInput(): Boolean {
+        val state = _uiState.value ?: return false
+        return state.title.isNotBlank() && state.frequency.isNotBlank() && state.frequency.toIntOrNull() != null
     }
 
-    fun generateColorSpectrum(count: Int) {
-        val colors = List(count) { i ->
-            val hue = (i.toFloat() / count) * 360f
-            Color.HSVToColor(floatArrayOf(hue, 1f, 1f))
-        }
-        _colorOptions.value = colors
-    }
-
-    fun createOrUpdateHabit(
-        currentHabitId: String?,
-        title: String,
-        description: String,
-        priorityPos: Int,
-        isGoodHabit: Boolean,
-        frequency: Int,
-        periodicity: String,
-        color: Int
-    ): Boolean {
-        if (title.isBlank() || frequency <= 0) {
+    fun saveHabit(currentHabitId: String?): Boolean {
+        if (!validateInput())
             return false
-        }
 
-        val priority = when (priorityPos) {
+        val state = _uiState.value ?: return false
+
+        val priority = when (state.priorityPos) {
             0 -> "High"
             1 -> "Medium"
             else -> "Low"
         }
 
-        val type = if (isGoodHabit) "Good" else "Bad"
+        val type = if (state.typeId == R.id.rbHabitGood) "Good" else "Bad"
+        val frequency = state.frequency.toIntOrNull() ?: 1
 
         val habit = if (currentHabitId != null) {
             Habit(
                 id = currentHabitId,
-                title = title,
-                description = description,
+                title = state.title,
+                description = state.description,
                 priority = priority,
                 type = type,
                 frequency = frequency,
-                periodicity = periodicity,
-                color = color
+                periodicity = getPeriodicity(state.periodicityPos),
+                color = state.selectedColor
             )
         } else {
             Habit(
-                title = title,
-                description = description,
+                title = state.title,
+                description = state.description,
                 priority = priority,
                 type = type,
                 frequency = frequency,
-                periodicity = periodicity,
-                color = color
+                periodicity = getPeriodicity(state.periodicityPos),
+                color = state.selectedColor
             )
         }
 
         if (currentHabitId == null) {
-            addHabit(habit)
+            HabitRepository.addHabit(habit)
         } else {
-            updateHabit(currentHabitId, habit)
+            HabitRepository.updateHabit(currentHabitId, habit)
         }
-
         return true
+    }
+
+    private fun getPeriodicity(periodicityPos: Int): String {
+        return when(periodicityPos) {
+            0 -> "Day"
+            1 -> "Week"
+            2 -> "Month"
+            else -> "Day"
+        }
     }
 
     override fun onHabitsChanged(habits: Map<String, Habit>) {

@@ -14,8 +14,8 @@ import com.example.dailybloom.viewmodel.HabitListViewModel
 class ActivityHabitTracker : AppCompatActivity() {
 
     private lateinit var viewModel: HabitListViewModel
-    private lateinit var adapter: HabitAdapter
     private lateinit var binding: ActivityHabitTrackerBinding
+    private lateinit var adapter: HabitAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
