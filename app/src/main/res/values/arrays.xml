@@ -1,0 +1,30 @@
+<resources>
+    <!-- Приоритеты -->
+    <string-array name="priority_levels">
+        <item>High</item>
+        <item>Medium</item>
+        <item>Low</item>
+    </string-array>
+
+    <!-- Цвета (названия) -->
+    <string-array name="color_names">
+        <item>Red</item>
+        <item>Green</item>
+        <item>Blue</item>
+    </string-array>
+
+    <!-- Значения цветов в HEX -->
+    <string-array name="color_values">
+        <item>#FF0000</item>
+        <item>#00FF00</item>
+        <item>#0000FF</item>
+    </string-array>
+
+    <!-- Периодичность -->
+    <string-array name="periodicity_options">
+        <item>Daily</item>
+        <item>Weekly</item>
+        <item>Monthly</item>
+    </string-array>
+</resources>
+
