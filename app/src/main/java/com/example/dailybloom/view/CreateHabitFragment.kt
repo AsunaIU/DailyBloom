@@ -1,45 +1,71 @@
 package com.example.dailybloom.view
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.AdapterView
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
+import androidx.fragment.app.viewModels
 import com.example.dailybloom.R
-import com.example.dailybloom.databinding.ActivityCreateHabitBinding
+import com.example.dailybloom.databinding.FragmentCreateHabitBinding
 import com.example.dailybloom.model.Habit
 import com.example.dailybloom.viewmodel.HabitEditViewModel
 import com.example.dailybloom.viewmodel.UIState
 
 
-class ActivityCreateHabit : AppCompatActivity() {
+class CreateHabitFragment : Fragment() {
 
     private val viewModel: HabitEditViewModel by viewModels()
-    private lateinit var binding: ActivityCreateHabitBinding
     private var currentHabit: Habit? = null
 
+    private var _binding: FragmentCreateHabitBinding? = null
+    private val binding get() = _binding!!
+
+    private var fragmentListener: CreateHabitListener? = null
+
     companion object {
-        private const val KEY_UI_STATE = "ui_state"
-        private const val TAG = "ActivityCreateHabit"
+        fun newInstance(habit: Habit? = null): CreateHabitFragment { //  параметр habit необязательный (на случай добавления новой привычки)
+            val fragment = CreateHabitFragment()
+            val args = Bundle()
+            args.putParcelable("habit", habit) // Bundle передает CreateHabitFragment существующую привычку для редактирования
+            fragment.arguments = args
+            return fragment
+        }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityCreateHabitBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        fragmentListener = context as CreateHabitListener
+    }
 
-        handleIntent()
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentCreateHabitBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        handleArguments()
         restoreState(savedInstanceState)
         setupUI()
         setupObservers()
     }
 
-    private fun handleIntent() {
-        currentHabit = intent.getParcelableExtra("HABIT")
+    private fun handleArguments() {
+        // фрагмент получает Bundle с аргументами через свойство arguments
+        currentHabit = arguments?.getParcelable("habit")
+        // если объект привычки != null (существующая привычка), используем его для заполнения UIState в ViewModel
         currentHabit?.let {
-            viewModel.setUIState(UIState(
+            viewModel.setUIState(
+                UIState(
                 title = it.title,
                 description = it.description,
                 priorityPos = when (it.priority) {
@@ -52,32 +78,34 @@ class ActivityCreateHabit : AppCompatActivity() {
                 periodicityPos = resources.getStringArray(R.array.periodicity_options)
                     .indexOf(it.periodicity).coerceAtLeast(0),
                 selectedColor = it.color
-            ))
+            )
+            )
         }
     }
-
+    // сохраняет состояние UI в Bundle
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         viewModel.uiState.value?.let {
-            outState.putParcelable(KEY_UI_STATE, it)
+            outState.putParcelable("ui_state", it)
         }
     }
 
     private fun restoreState(savedInstanceState: Bundle?) {
-        savedInstanceState?.getParcelable<UIState>(KEY_UI_STATE)?.let {
+        savedInstanceState?.getParcelable<UIState>("ui_state")?.let {
             viewModel.setUIState(it)
         }
     }
 
     private fun setupObservers() {
-        viewModel.uiState.observe(this) { state ->
+        viewModel.uiState.observe(viewLifecycleOwner) { state ->
             updateUI(state)
         }
     }
 
+    // обновление UI в соответствии с переданным состоянием
     private fun updateUI(state: UIState) {
         with(binding) {
-            if (!etHabitTitle.hasFocus()) etHabitTitle.setText(state.title)
+            if (!etHabitTitle.hasFocus()) etHabitTitle.setText(state.title) // поле не в фокусе (т.е. не вводятся данные)
             if (!etHabitDescription.hasFocus()) etHabitDescription.setText(state.description)
             if (!etHabitFrequency.hasFocus()) etHabitFrequency.setText(state.frequency)
 
@@ -90,18 +118,17 @@ class ActivityCreateHabit : AppCompatActivity() {
 
     private fun setupUI() {
         with(binding) {
+
             etHabitTitle.doAfterTextChanged {
                 if (etHabitTitle.hasFocus()) {
                     viewModel.updateUIState(title = it.toString())
                 }
             }
-
             etHabitDescription.doAfterTextChanged {
                 if (etHabitDescription.hasFocus()) {
                     viewModel.updateUIState(description = it.toString())
                 }
             }
-
             etHabitFrequency.doAfterTextChanged {
                 if (etHabitFrequency.hasFocus()) {
                     viewModel.updateUIState(frequency = it.toString())
@@ -132,24 +159,31 @@ class ActivityCreateHabit : AppCompatActivity() {
 
             btnSaveHabit.setOnClickListener {
                 if (saveHabit()) {
-                    finish()
+                    fragmentListener?.onHabitSaved()
                 }
             }
         }
     }
-
     private fun saveHabit(): Boolean {
-        val success = viewModel.saveHabit(currentHabit?.id)
+        val isSaved = viewModel.saveHabit(currentHabit?.id)
 
-        if (!success) {
+        if (!isSaved) {
             with(binding) {
                 val state = viewModel.uiState.value ?: return false
                 if (state.title.isBlank()) etHabitTitle.error = "Enter a title"
-                if (state.frequency.isBlank()) etHabitFrequency.error = "Enter frequency"
+                // if (state.frequency.isBlank()) etHabitFrequency.error = "Enter frequency"
+                Log.d("SaveHabit", "Frequency value: ${state.frequency}")
             }
-            Log.e(TAG, "Failed to save habit")
         }
+        return isSaved
+    }
 
-        return success
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    interface CreateHabitListener {
+        fun onHabitSaved()
     }
 }
