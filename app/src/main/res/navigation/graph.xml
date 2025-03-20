@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/habitTrackerFragment">
+
+    <fragment
+        android:id="@+id/habitTrackerFragment"
+        android:name="com.example.dailybloom.view.HabitTrackerFragment"
+        android:label="Habits"
+        tools:layout="@layout/fragment_habit_tracker" />
+
+    <fragment
+        android:id="@+id/appInfoFragment"
+        android:name="com.example.dailybloom.view.InfoFragment"
+        android:label="About DailyBloom"
+        tools:layout="@layout/fragment_info" />
+
+    <fragment
+        android:id="@+id/createHabitFragment"
+        android:name="com.example.dailybloom.view.CreateHabitFragment"
+        android:label="Create Habit"
+        tools:layout="@layout/fragment_create_habit" />
+</navigation>

@@ -22,9 +22,16 @@ class GoodHabitsFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+
         if (parentFragment is HabitTrackerFragment.HabitFragmentListener) {
             fragmentListener = parentFragment as HabitTrackerFragment.HabitFragmentListener
-        } else {
+        }
+
+        else if (context is HabitTrackerFragment.HabitFragmentListener) {
+            fragmentListener = context
+        }
+        
+        else {
             throw RuntimeException("Parent fragment must implement HabitFragmentListener")
         }
     }

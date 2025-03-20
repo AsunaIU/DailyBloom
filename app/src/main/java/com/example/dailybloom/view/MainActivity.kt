@@ -1,62 +1,97 @@
 package com.example.dailybloom.view
 
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
+import android.view.MenuItem
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
+import androidx.core.view.GravityCompat
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.setupWithNavController
 import com.example.dailybloom.R
 import com.example.dailybloom.databinding.ActivityMainBinding
 import com.example.dailybloom.model.Habit
+import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity(),
     HabitTrackerFragment.HabitFragmentListener,
-    CreateHabitFragment.CreateHabitListener {
+    CreateHabitFragment.CreateHabitListener,
+    NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var navController: NavController
+    private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var toggle: ActionBarDrawerToggle
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        supportFragmentManager
 
-        if (savedInstanceState == null) { // проверяем, что активность создается впервые (не воссоздается после поворота экрана)
-            replaceFragment(HabitTrackerFragment.newInstance())
+        setSupportActionBar(binding.toolbar)
+
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        navController = navHostFragment.navController
+
+        toggle = ActionBarDrawerToggle(
+            this,
+            binding.drawerLayout,
+            binding.toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
+        )
+        binding.drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        appBarConfiguration = AppBarConfiguration(
+            setOf(R.id.habitTrackerFragment, R.id.appInfoFragment),
+            binding.drawerLayout
+        )
+        setupActionBarWithNavController(navController, appBarConfiguration)
+        binding.navView.setupWithNavController(navController)
+        binding.navView.setNavigationItemSelectedListener(this)
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        // Handle navigation view item clicks
+        when (item.itemId) {
+            R.id.habitTrackerFragment, R.id.appInfoFragment -> {
+                navController.navigate(item.itemId)
+            }
         }
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
+        return true
     }
 
-    private fun replaceFragment(fragment: Fragment) { //инкапсуляция логики для перехода между фрагментами
-        supportFragmentManager
-            .beginTransaction()
-            .replace(R.id.fragment_main, fragment)
-            .addToBackStack(null)
-            .commit()
-    }
-
-    override fun onCreateNewHabit() {
-        replaceFragment(CreateHabitFragment.newInstance())
-    }
-
-    override fun onEditHabit(habit: Habit) {
-        replaceFragment(CreateHabitFragment.newInstance(habit))
-    }
-
-    override fun onHabitSaved() {
-        supportFragmentManager.popBackStack() // сохранение возвращает к предыдущему фрагменту
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
     override fun onBackPressed() {
-        if (supportFragmentManager.backStackEntryCount > 0) {
-            super.onBackPressed()
+        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
-            AlertDialog.Builder(this)
-                .setTitle("Выход")
-                .setMessage("Закрыть приложение?")
-                .setPositiveButton("Да") { _, _ -> finish() }
-                .setNegativeButton("Нет", null)
-                .show()
+            super.onBackPressed()
         }
     }
-}
 
+    override fun onCreateNewHabit() {
+        navController.navigate(R.id.createHabitFragment)
+    }
+
+    override fun onEditHabit(habit: Habit) {
+        val bundle = Bundle().apply {
+            putParcelable("habit", habit)
+        }
+        navController.navigate(R.id.createHabitFragment, bundle)
+    }
+
+    override fun onHabitSaved() {
+        navController.navigateUp()
+    }
+}
 

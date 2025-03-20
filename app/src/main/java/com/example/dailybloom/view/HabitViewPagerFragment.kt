@@ -18,6 +18,7 @@ class HabitViewPagerFragment : Fragment(), HabitTrackerFragment.HabitFragmentLis
 
     private var _binding: FragmentHabitViewPagerBinding? = null
     private val binding get() = _binding!!
+
     private var fragmentListener: HabitTrackerFragment.HabitFragmentListener? = null
 
     override fun onAttach(context: Context) {
@@ -68,6 +69,10 @@ class HabitViewPagerFragment : Fragment(), HabitTrackerFragment.HabitFragmentLis
 
     override fun onEditHabit(habit: Habit) {
         fragmentListener?.onEditHabit(habit)
+    }
+
+    companion object {
+        fun newInstance() = HabitViewPagerFragment()
     }
 
     class PagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
