@@ -10,7 +10,7 @@ object HabitRepository {
 
     // Функции управления привычками
 
-    fun addHabit(habit: Habit) { // вставляет новую привычку или заменяет существующую, если такая уже есть
+    fun addHabit(habit: Habit) { // вставляет новую привычку или заменяет существующую
         habits[habit.id] = habit
         notifyListeners()
     }

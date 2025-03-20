@@ -22,10 +22,9 @@ data class UIState(
     val selectedColor: Int = Color.WHITE
 ) : Parcelable
 
-
 class HabitEditViewModel : ViewModel(), HabitChangeListener {
 
-    private val _uiState = MutableLiveData(UIState())
+    private val _uiState = MutableLiveData(UIState()) // создаётся объект UIState с значениями по умолчанию
     val uiState: LiveData<UIState> = _uiState
 
     private val _habits = MutableLiveData(HabitRepository.getHabits())
@@ -35,7 +34,7 @@ class HabitEditViewModel : ViewModel(), HabitChangeListener {
         HabitRepository.addListener(this)
     }
 
-    fun setUIState(state: UIState) {
+    fun setUIState(state: UIState) {  // устанавливаем новое состояние UI вместо текущего
         _uiState.value = state
     }
 
@@ -51,7 +50,8 @@ class HabitEditViewModel : ViewModel(), HabitChangeListener {
         frequency: String? = null,
         periodicityPos: Int? = null
     ) {
-        val current = _uiState.value ?: UIState()
+        val current = _uiState.value
+            ?: UIState() // current не null – либо используется текущее состояние, либо создаётся новое с дефолтными значениями
         _uiState.value = current.copy(
             title = title ?: current.title,
             description = description ?: current.description,
@@ -67,9 +67,8 @@ class HabitEditViewModel : ViewModel(), HabitChangeListener {
         return state.title.isNotBlank() && state.frequency.isNotBlank() && state.frequency.toIntOrNull() != null
     }
 
-    fun saveHabit(currentHabitId: String?): Boolean {
-        if (!validateInput())
-            return false
+    fun saveHabit(currentHabitId: String?): Boolean { // nullable-тип String? разделяет два сценария (создание новой привычки/обновление существующей)
+        if (!validateInput()) return false
 
         val state = _uiState.value ?: return false
 
@@ -78,11 +77,10 @@ class HabitEditViewModel : ViewModel(), HabitChangeListener {
             1 -> "Medium"
             else -> "Low"
         }
-
         val type = if (state.typeId == R.id.rbHabitGood) "Good" else "Bad"
         val frequency = state.frequency.toIntOrNull() ?: 1
 
-        val habit = if (currentHabitId != null) {
+        val habit = if (currentHabitId != null) { // обновляется привычка с указанным id
             Habit(
                 id = currentHabitId,
                 title = state.title,
@@ -93,7 +91,7 @@ class HabitEditViewModel : ViewModel(), HabitChangeListener {
                 periodicity = getPeriodicity(state.periodicityPos),
                 color = state.selectedColor
             )
-        } else {
+        } else { // создается новая привычка (id генерируется при создании экземпляра Habit "UUID.randomUUID().toString()")
             Habit(
                 title = state.title,
                 description = state.description,
@@ -104,17 +102,17 @@ class HabitEditViewModel : ViewModel(), HabitChangeListener {
                 color = state.selectedColor
             )
         }
-
         if (currentHabitId == null) {
             HabitRepository.addHabit(habit)
         } else {
             HabitRepository.updateHabit(currentHabitId, habit)
         }
+
         return true
     }
 
     private fun getPeriodicity(periodicityPos: Int): String {
-        return when(periodicityPos) {
+        return when (periodicityPos) {
             0 -> "Day"
             1 -> "Week"
             2 -> "Month"

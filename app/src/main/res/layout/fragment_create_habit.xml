@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".view.CreateHabitFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -130,19 +132,27 @@
                 android:entries="@array/priority_levels"/>
         </com.google.android.material.textfield.TextInputLayout>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Color"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
         <!-- Интеграция ColorPicker -->
         <com.example.dailybloom.view.ColorPicker
             android:id="@+id/colorPicker"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="5dp" />
 
         <Button
             android:id="@+id/btnSaveHabit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Сохранить"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="16dp"
+            android:text="Сохранить" />
 
     </LinearLayout>
 </ScrollView>
