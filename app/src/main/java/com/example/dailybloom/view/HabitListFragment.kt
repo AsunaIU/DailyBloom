@@ -6,16 +6,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dailybloom.databinding.FragmentHabitsListBinding
 import com.example.dailybloom.model.Habit
 import com.example.dailybloom.model.HabitType
+import com.example.dailybloom.util.Constants
 import com.example.dailybloom.viewmodel.HabitListViewModel
 
 class HabitListFragment : Fragment() {
 
-    private lateinit var viewModel: HabitListViewModel
+    private val viewModel: HabitListViewModel by activityViewModels()
 
     private var _binding: FragmentHabitsListBinding? = null
     private val binding get() = _binding!!
@@ -38,7 +39,7 @@ class HabitListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHabitsListBinding.inflate(inflater, container, false)
-        arguments?.getString(ARG_HABIT_TYPE)?.let {
+        arguments?.getString(Constants.ARG_HABIT_TYPE)?.let {
             habitType = HabitType.fromString(it)
         }
         return binding.root
@@ -47,9 +48,8 @@ class HabitListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel = ViewModelProvider(requireActivity())[HabitListViewModel::class.java]
-
         setupRecyclerView()
+        setupFilterButton()
         observeViewModel()
     }
 
@@ -61,14 +61,24 @@ class HabitListFragment : Fragment() {
         }
     }
 
+    private fun setupFilterButton() {
+        binding.fabFilter.setOnClickListener {
+            showFilterBottomSheet()
+        }
+    }
+    private fun showFilterBottomSheet() {
+        val filterBottomSheet = HabitFilterFragment.newInstance()
+        filterBottomSheet.show(parentFragmentManager, HabitFilterFragment.TAG)
+    }
+
     private fun openEditScreen(habit: Habit) {
         fragmentListener?.onEditHabit(habit)
     }
 
     private fun observeViewModel() {
-        viewModel.habits.observe(viewLifecycleOwner) { habits ->
-            val filteredHabits = habits.values.filter { it.type == habitType }
-            adapter.submitList(filteredHabits)
+        viewModel.filteredHabits.observe(viewLifecycleOwner) { filteredHabits ->
+            val habitsOfCurrentType = filteredHabits.filter { it.type == habitType }
+            adapter.submitList(habitsOfCurrentType)
         }
     }
 
@@ -78,12 +88,10 @@ class HabitListFragment : Fragment() {
     }
 
     companion object {
-        private const val ARG_HABIT_TYPE = "habitType"
-
         fun newInstance(habitType: String): HabitListFragment {
             return HabitListFragment().apply {
                 arguments = Bundle().apply {
-                    putString(ARG_HABIT_TYPE, habitType)
+                    putString(Constants.ARG_HABIT_TYPE, habitType)
                 }
             }
         }
