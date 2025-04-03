@@ -17,7 +17,7 @@ import com.example.dailybloom.model.Habit
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity(),
-    HabitTrackerFragment.HabitFragmentListener,
+    HabitViewPagerFragment.HabitFragmentListener,
     CreateHabitFragment.CreateHabitListener,
     NavigationView.OnNavigationItemSelectedListener {
 
@@ -33,8 +33,7 @@ class MainActivity : AppCompatActivity(),
 
         setSupportActionBar(binding.toolbar)
 
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
 
         toggle = ActionBarDrawerToggle(
@@ -48,7 +47,7 @@ class MainActivity : AppCompatActivity(),
         toggle.syncState()
 
         appBarConfiguration = AppBarConfiguration(
-            setOf(R.id.habitTrackerFragment, R.id.appInfoFragment),
+            setOf(R.id.habitViewPagerFragment, R.id.infoFragment),
             binding.drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -57,9 +56,8 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        // Handle navigation view item clicks
         when (item.itemId) {
-            R.id.habitTrackerFragment, R.id.appInfoFragment -> {
+            R.id.habitViewPagerFragment, R.id.infoFragment -> {
                 navController.navigate(item.itemId)
             }
         }
