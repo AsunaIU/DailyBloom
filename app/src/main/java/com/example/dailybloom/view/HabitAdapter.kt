@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dailybloom.R
 import com.example.dailybloom.model.Habit
@@ -13,16 +15,7 @@ import com.example.dailybloom.model.Priority
 
 class HabitAdapter(
     private val onClick: (Habit) -> Unit
-) : RecyclerView.Adapter<HabitAdapter.HabitViewHolder>() {
-
-    private val items = mutableListOf<Habit>()
-
-    @SuppressLint("NotifyDataSetChanged")
-    fun submitList(newItems: List<Habit>) {
-        items.clear()
-        items.addAll(newItems)
-        notifyDataSetChanged()
-    }
+) : ListAdapter<Habit, HabitAdapter.HabitViewHolder>(HabitDiffCallback) {
 
     // Создание ViewHolder для каждого элемента привычки
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HabitViewHolder {
@@ -32,11 +25,8 @@ class HabitAdapter(
 
     // Привязка данных к ViewHolder
     override fun onBindViewHolder(holder: HabitViewHolder, position: Int) {
-        val habit = items[position]
-        holder.bind(habit, onClick)
+        holder.bind(getItem(position), onClick)
     }
-
-    override fun getItemCount(): Int = items.size
 
     // Класс ViewHolder для обработки каждого элемента привычки
     class HabitViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -57,6 +47,16 @@ class HabitAdapter(
             type.text = HabitType.toDisplayString(habit.type)
             frequency.text = "${habit.frequency} per ${habit.periodicity}"
             itemView.setOnClickListener { onClick(habit) }
+        }
+    }
+
+    companion object HabitDiffCallback : DiffUtil.ItemCallback<Habit>() {
+        override fun areItemsTheSame(oldItem: Habit, newItem: Habit): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: Habit, newItem: Habit): Boolean {
+            return oldItem == newItem
         }
     }
 }
