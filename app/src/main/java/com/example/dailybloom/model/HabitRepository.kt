@@ -1,21 +1,24 @@
 package com.example.dailybloom.model
 
+import java.lang.ref.WeakReference
+import java.util.concurrent.CopyOnWriteArrayList
+
 // управляет хранилищем привычек (habits) и уведомляет listeners об изменениях
 // работает как менеджер данных, предоставляя интерфейс для добавления, обновления, удаления и получения списка привычек
 
 object HabitRepository {
 
     private val habits: MutableMap<String, Habit> = java.util.concurrent.ConcurrentHashMap()
-    private val listeners = java.util.concurrent.CopyOnWriteArrayList<HabitChangeListener>()
+    private val listeners = CopyOnWriteArrayList<WeakReference<HabitChangeListener>>()
 
     // Функции управления привычками
 
-    fun addHabit(habit: Habit) { // вставляет новую привычку или заменяет существующую
+    fun addHabit(habit: Habit) {
         habits[habit.id] = habit
         notifyListeners()
     }
 
-    fun updateHabit(habitId: String, updatedHabit: Habit) { //разделение на будущее: заменяет habits, не проверяя существование старой записи
+    fun updateHabit(habitId: String, updatedHabit: Habit) {
         habits[habitId] = updatedHabit
         notifyListeners()
     }
@@ -27,20 +30,23 @@ object HabitRepository {
 
     fun getHabits(): Map<String, Habit> = habits.toMap()
 
+
+    // Функции управления слушателями
+
     fun addListener(listener: HabitChangeListener) {
-        if (!listeners.contains(listener)) {
-            listeners.add(listener)
+        if (!listeners.any { it.get() == listener }) {
+            listeners.add(WeakReference(listener))
         }
     }
 
     fun removeListener(listener: HabitChangeListener) {
-        listeners.remove(listener)
+        listeners.removeIf { it.get() == listener || it.get() == null }
     }
 
     private fun notifyListeners() {
         val currentHabits = getHabits()   // метод getHabits() - возвращает копию коллекции, передаем ee listener
         for (listener in listeners) {
-            listener.onHabitsChanged(currentHabits)
+            listener.get()?.onHabitsChanged(currentHabits)
         }
     }
 }
