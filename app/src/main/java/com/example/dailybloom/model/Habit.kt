@@ -10,9 +10,9 @@ data class Habit(
     val id: String = UUID.randomUUID().toString(),
     var title: String = "",
     var description: String = "",
-    var priority: String = "Medium",
-    var type: String = "Good",
+    var priority: Priority = Priority.MEDIUM,
+    var type: HabitType = HabitType.GOOD,
     var frequency: Int = 1,
-    var periodicity: String = "Day",
+    var periodicity: Periodicity = Periodicity.DAY,
     var color: Int = Color.BLUE
 ) : Parcelable

@@ -4,11 +4,15 @@ import android.graphics.Color
 import android.os.Parcelable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.example.dailybloom.R
 import com.example.dailybloom.model.Habit
 import com.example.dailybloom.model.HabitChangeListener
 import com.example.dailybloom.model.HabitRepository
+import com.example.dailybloom.model.HabitType
+import com.example.dailybloom.model.Periodicity
+import com.example.dailybloom.model.Priority
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -22,8 +26,9 @@ data class UIState(
     val selectedColor: Int = Color.WHITE
 ) : Parcelable
 
-class HabitEditViewModel : ViewModel(), HabitChangeListener {
+class HabitEditViewModel(private val handle: SavedStateHandle) : ViewModel(), HabitChangeListener {
 
+    private val currentHabit = handle.get<Habit>("current_habit")
     private val _uiState = MutableLiveData(UIState()) // создаётся объект UIState с значениями по умолчанию
     val uiState: LiveData<UIState> = _uiState
 
@@ -50,8 +55,7 @@ class HabitEditViewModel : ViewModel(), HabitChangeListener {
         frequency: String? = null,
         periodicityPos: Int? = null
     ) {
-        val current = _uiState.value
-            ?: UIState() // current не null – либо используется текущее состояние, либо создаётся новое с дефолтными значениями
+        val current = _uiState.value ?: UIState() // current не null – либо используется текущее состояние, либо создаётся новое с дефолтными значениями
         _uiState.value = current.copy(
             title = title ?: current.title,
             description = description ?: current.description,
@@ -62,7 +66,7 @@ class HabitEditViewModel : ViewModel(), HabitChangeListener {
         )
     }
 
-    fun validateInput(): Boolean {
+    private fun validateInput(): Boolean {
         val state = _uiState.value ?: return false
         return state.title.isNotBlank() && state.frequency.isNotBlank() && state.frequency.toIntOrNull() != null
     }
@@ -72,12 +76,9 @@ class HabitEditViewModel : ViewModel(), HabitChangeListener {
 
         val state = _uiState.value ?: return false
 
-        val priority = when (state.priorityPos) {
-            0 -> "High"
-            1 -> "Medium"
-            else -> "Low"
-        }
-        val type = if (state.typeId == R.id.rbHabitGood) "Good" else "Bad"
+        val priority = Priority.entries[state.priorityPos]
+        val type = if (state.typeId == R.id.rbHabitGood) HabitType.GOOD else HabitType.BAD
+        val periodicity = Periodicity.entries[state.periodicityPos]
         val frequency = state.frequency.toIntOrNull() ?: 1
 
         val habit = if (currentHabitId != null) { // обновляется привычка с указанным id
@@ -88,7 +89,7 @@ class HabitEditViewModel : ViewModel(), HabitChangeListener {
                 priority = priority,
                 type = type,
                 frequency = frequency,
-                periodicity = getPeriodicity(state.periodicityPos),
+                periodicity = periodicity,
                 color = state.selectedColor
             )
         } else { // создается новая привычка (id генерируется при создании экземпляра Habit "UUID.randomUUID().toString()")
@@ -98,7 +99,7 @@ class HabitEditViewModel : ViewModel(), HabitChangeListener {
                 priority = priority,
                 type = type,
                 frequency = frequency,
-                periodicity = getPeriodicity(state.periodicityPos),
+                periodicity = periodicity,
                 color = state.selectedColor
             )
         }
@@ -111,14 +112,15 @@ class HabitEditViewModel : ViewModel(), HabitChangeListener {
         return true
     }
 
-    private fun getPeriodicity(periodicityPos: Int): String {
-        return when (periodicityPos) {
-            0 -> "Day"
-            1 -> "Week"
-            2 -> "Month"
-            else -> "Day"
-        }
-    }
+//    Надо удалить если нет ошибок
+//    private fun getPeriodicity(periodicityPos: Int): String {
+//        return when (periodicityPos) {
+//            0 -> "Day"
+//            1 -> "Week"
+//            2 -> "Month"
+//            else -> "Day"
+//        }
+//    }
 
     override fun onHabitsChanged(habits: Map<String, Habit>) {
         _habits.postValue(habits)

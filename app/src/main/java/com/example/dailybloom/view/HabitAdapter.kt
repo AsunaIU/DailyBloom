@@ -8,6 +8,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dailybloom.R
 import com.example.dailybloom.model.Habit
+import com.example.dailybloom.model.HabitType
+import com.example.dailybloom.model.Priority
 
 class HabitAdapter(
     private val onClick: (Habit) -> Unit
@@ -15,6 +17,7 @@ class HabitAdapter(
 
     private val items = mutableListOf<Habit>()
 
+    @SuppressLint("NotifyDataSetChanged")
     fun submitList(newItems: List<Habit>) {
         items.clear()
         items.addAll(newItems)
@@ -50,8 +53,8 @@ class HabitAdapter(
             title.text = habit.title
             description.text = habit.description
             colorIndicator.setBackgroundColor(habit.color)
-            priority.text = habit.priority
-            type.text = habit.type
+            priority.text = Priority.toDisplayString(habit.priority)
+            type.text = HabitType.toDisplayString(habit.type)
             frequency.text = "${habit.frequency} per ${habit.periodicity}"
             itemView.setOnClickListener { onClick(habit) }
         }

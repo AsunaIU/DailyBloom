@@ -13,6 +13,7 @@ import androidx.fragment.app.viewModels
 import com.example.dailybloom.R
 import com.example.dailybloom.databinding.FragmentCreateHabitBinding
 import com.example.dailybloom.model.Habit
+import com.example.dailybloom.model.HabitType
 import com.example.dailybloom.viewmodel.HabitEditViewModel
 import com.example.dailybloom.viewmodel.UIState
 
@@ -66,22 +67,18 @@ class CreateHabitFragment : Fragment() {
         currentHabit?.let {
             viewModel.setUIState(
                 UIState(
-                title = it.title,
-                description = it.description,
-                priorityPos = when (it.priority) {
-                    "High" -> 0
-                    "Medium" -> 1
-                    else -> 2
-                },
-                typeId = if (it.type == "Good") R.id.rbHabitGood else R.id.rbHabitBad,
-                frequency = it.frequency.toString(),
-                periodicityPos = resources.getStringArray(R.array.periodicity_options)
-                    .indexOf(it.periodicity).coerceAtLeast(0),
-                selectedColor = it.color
-            )
+                    title = it.title,
+                    description = it.description,
+                    priorityPos = it.priority.ordinal,
+                    typeId = if (it.type == HabitType.GOOD) R.id.rbHabitGood else R.id.rbHabitBad,
+                    frequency = it.frequency.toString(),
+                    periodicityPos = it.periodicity.ordinal,
+                    selectedColor = it.color,
+                )
             )
         }
     }
+
     // сохраняет состояние UI в Bundle
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -118,7 +115,6 @@ class CreateHabitFragment : Fragment() {
 
     private fun setupUI() {
         with(binding) {
-
             etHabitTitle.doAfterTextChanged {
                 if (etHabitTitle.hasFocus()) {
                     viewModel.updateUIState(title = it.toString())
@@ -134,7 +130,6 @@ class CreateHabitFragment : Fragment() {
                     viewModel.updateUIState(frequency = it.toString())
                 }
             }
-
             spinnerPriority.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                     viewModel.updateUIState(priorityPos = position)
@@ -171,7 +166,7 @@ class CreateHabitFragment : Fragment() {
             with(binding) {
                 val state = viewModel.uiState.value ?: return false
                 if (state.title.isBlank()) etHabitTitle.error = "Enter a title"
-                // if (state.frequency.isBlank()) etHabitFrequency.error = "Enter frequency"
+                if (state.frequency.isBlank()) etHabitFrequency.error = "Enter frequency"
                 Log.d("SaveHabit", "Frequency value: ${state.frequency}")
             }
         }
