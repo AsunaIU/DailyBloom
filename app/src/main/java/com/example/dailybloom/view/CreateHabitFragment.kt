@@ -10,17 +10,17 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
-import com.example.dailybloom.R
 import com.example.dailybloom.databinding.FragmentCreateHabitBinding
 import com.example.dailybloom.model.Habit
-import com.example.dailybloom.model.HabitType
+import com.example.dailybloom.util.Constants
 import com.example.dailybloom.viewmodel.HabitEditViewModel
-import com.example.dailybloom.viewmodel.UIState
+import com.example.dailybloom.viewmodel.UiHabit
 
 
 class CreateHabitFragment : Fragment() {
 
     private val viewModel: HabitEditViewModel by viewModels()
+
     private var currentHabit: Habit? = null
 
     private var _binding: FragmentCreateHabitBinding? = null
@@ -29,10 +29,10 @@ class CreateHabitFragment : Fragment() {
     private var fragmentListener: CreateHabitListener? = null
 
     companion object {
-        fun newInstance(habit: Habit? = null): CreateHabitFragment { //  параметр habit необязательный (на случай добавления новой привычки)
+        fun newInstance(habit: Habit? = null): CreateHabitFragment {
             val fragment = CreateHabitFragment()
             val args = Bundle()
-            args.putParcelable("habit", habit) // Bundle передает CreateHabitFragment существующую привычку для редактирования
+            args.putParcelable(Constants.ARG_HABIT, habit)
             fragment.arguments = args
             return fragment
         }
@@ -54,41 +54,26 @@ class CreateHabitFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        handleArguments()
+        arguments?.getParcelable<Habit>(Constants.ARG_HABIT)?.let { // замена handleArguments(); передаем привычку в ViewModel
+                currentHabit = it
+                viewModel.setCurrentHabit(it)
+            }
+
         restoreState(savedInstanceState)
         setupUI()
         setupObservers()
-    }
-
-    private fun handleArguments() {
-        // фрагмент получает Bundle с аргументами через свойство arguments
-        currentHabit = arguments?.getParcelable("habit")
-        // если объект привычки != null (существующая привычка), используем его для заполнения UIState в ViewModel
-        currentHabit?.let {
-            viewModel.setUIState(
-                UIState(
-                    title = it.title,
-                    description = it.description,
-                    priorityPos = it.priority.ordinal,
-                    typeId = if (it.type == HabitType.GOOD) R.id.rbHabitGood else R.id.rbHabitBad,
-                    frequency = it.frequency.toString(),
-                    periodicityPos = it.periodicity.ordinal,
-                    selectedColor = it.color,
-                )
-            )
-        }
     }
 
     // сохраняет состояние UI в Bundle
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         viewModel.uiState.value?.let {
-            outState.putParcelable("ui_state", it)
+            outState.putParcelable(Constants.KEY_UI_STATE, it)
         }
     }
 
     private fun restoreState(savedInstanceState: Bundle?) {
-        savedInstanceState?.getParcelable<UIState>("ui_state")?.let {
+        savedInstanceState?.getParcelable<UiHabit>(Constants.KEY_UI_STATE)?.let {
             viewModel.setUIState(it)
         }
     }
@@ -100,7 +85,7 @@ class CreateHabitFragment : Fragment() {
     }
 
     // обновление UI в соответствии с переданным состоянием
-    private fun updateUI(state: UIState) {
+    private fun updateUI(state: UiHabit) {
         with(binding) {
             if (!etHabitTitle.hasFocus()) etHabitTitle.setText(state.title) // поле не в фокусе (т.е. не вводятся данные)
             if (!etHabitDescription.hasFocus()) etHabitDescription.setText(state.description)
@@ -131,18 +116,31 @@ class CreateHabitFragment : Fragment() {
                 }
             }
             spinnerPriority.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
                     viewModel.updateUIState(priorityPos = position)
                 }
+
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
 
-            spinnerFrequencyUnit.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                    viewModel.updateUIState(periodicityPos = position)
+            spinnerFrequencyUnit.onItemSelectedListener =
+                object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(
+                        parent: AdapterView<*>?,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        viewModel.updateUIState(periodicityPos = position)
+                    }
+
+                    override fun onNothingSelected(parent: AdapterView<*>?) {}
                 }
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
-            }
 
             rgHabitType.setOnCheckedChangeListener { _, checkedId ->
                 viewModel.updateUIState(typeId = checkedId)
@@ -159,6 +157,7 @@ class CreateHabitFragment : Fragment() {
             }
         }
     }
+
     private fun saveHabit(): Boolean {
         val isSaved = viewModel.saveHabit(currentHabit?.id)
 

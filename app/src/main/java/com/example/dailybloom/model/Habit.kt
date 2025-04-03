@@ -14,5 +14,6 @@ data class Habit(
     var type: HabitType = HabitType.GOOD,
     var frequency: Int = 1,
     var periodicity: Periodicity = Periodicity.DAY,
-    var color: Int = Color.BLUE
+    var color: Int = Color.BLUE,
+    val createdAt: Long = System.currentTimeMillis(),
 ) : Parcelable

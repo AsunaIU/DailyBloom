@@ -16,30 +16,51 @@ import com.example.dailybloom.model.Priority
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class UIState(
+data class UiHabit(
     val title: String = "",
     val description: String = "",
-    val priorityPos: Int = 1,
+    val priorityPos: Int = Priority.MEDIUM.ordinal,
     val typeId: Int = R.id.rbHabitGood,
     val frequency: String = "1",
-    val periodicityPos: Int = 0,
+    val periodicityPos: Int = Periodicity.DAY.ordinal,
     val selectedColor: Int = Color.WHITE
 ) : Parcelable
 
-class HabitEditViewModel(private val handle: SavedStateHandle) : ViewModel(), HabitChangeListener {
+class HabitEditViewModel(handle: SavedStateHandle) : ViewModel(), HabitChangeListener {
 
-    private val currentHabit = handle.get<Habit>("current_habit")
-    private val _uiState = MutableLiveData(UIState()) // создаётся объект UIState с значениями по умолчанию
-    val uiState: LiveData<UIState> = _uiState
+    private val _uiState = MutableLiveData(UiHabit()) // создаётся объект UIState с значениями по умолчанию
+    val uiState: LiveData<UiHabit> = _uiState
 
     private val _habits = MutableLiveData(HabitRepository.getHabits())
     val habits: LiveData<Map<String, Habit>> = _habits
 
+    private var currentHabit: Habit? = null
+
     init {
         HabitRepository.addListener(this)
+        handle.get<Habit>("habit")?.let {
+            setCurrentHabit(it)
+        }
     }
 
-    fun setUIState(state: UIState) {  // устанавливаем новое состояние UI вместо текущего
+    fun setCurrentHabit(habit: Habit) {
+        currentHabit = habit
+        _uiState.value = habit.toUiHabit()
+    }
+
+    private fun Habit.toUiHabit(): UiHabit {
+        return UiHabit(
+            title = this.title,
+            description = this.description,
+            priorityPos = this.priority.ordinal,
+            typeId = if (this.type == HabitType.GOOD) R.id.rbHabitGood else R.id.rbHabitBad,
+            frequency = this.frequency.toString(),
+            periodicityPos = this.periodicity.ordinal,
+            selectedColor = this.color
+        )
+    }
+
+    fun setUIState(state: UiHabit) {  // устанавливаем новое состояние UI вместо текущего
         _uiState.value = state
     }
 
@@ -55,7 +76,7 @@ class HabitEditViewModel(private val handle: SavedStateHandle) : ViewModel(), Ha
         frequency: String? = null,
         periodicityPos: Int? = null
     ) {
-        val current = _uiState.value ?: UIState() // current не null – либо используется текущее состояние, либо создаётся новое с дефолтными значениями
+        val current = _uiState.value ?: UiHabit() // current не null – либо используется текущее состояние, либо создаётся новое с дефолтными значениями
         _uiState.value = current.copy(
             title = title ?: current.title,
             description = description ?: current.description,
@@ -111,16 +132,6 @@ class HabitEditViewModel(private val handle: SavedStateHandle) : ViewModel(), Ha
 
         return true
     }
-
-//    Надо удалить если нет ошибок
-//    private fun getPeriodicity(periodicityPos: Int): String {
-//        return when (periodicityPos) {
-//            0 -> "Day"
-//            1 -> "Week"
-//            2 -> "Month"
-//            else -> "Day"
-//        }
-//    }
 
     override fun onHabitsChanged(habits: Map<String, Habit>) {
         _habits.postValue(habits)

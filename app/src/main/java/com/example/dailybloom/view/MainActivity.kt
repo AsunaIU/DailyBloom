@@ -14,6 +14,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.dailybloom.R
 import com.example.dailybloom.databinding.ActivityMainBinding
 import com.example.dailybloom.model.Habit
+import com.example.dailybloom.util.Constants
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity(),
@@ -69,6 +70,7 @@ class MainActivity : AppCompatActivity(),
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
+    @Deprecated("This method has been deprecated in favor of using the\n      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.\n      The OnBackPressedDispatcher controls how back button events are dispatched\n      to one or more {@link OnBackPressedCallback} objects.")
     override fun onBackPressed() {
         if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
             binding.drawerLayout.closeDrawer(GravityCompat.START)
@@ -83,7 +85,7 @@ class MainActivity : AppCompatActivity(),
 
     override fun onEditHabit(habit: Habit) {
         val bundle = Bundle().apply {
-            putParcelable("habit", habit)
+            putParcelable(Constants.ARG_HABIT, habit)
         }
         navController.navigate(R.id.createHabitFragment, bundle)
     }
