@@ -2,30 +2,34 @@ package com.example.dailybloom.view
 
 import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.dailybloom.databinding.FragmentHabitTrackerBinding
+import com.example.dailybloom.databinding.FragmentHabitsListBinding
 import com.example.dailybloom.model.Habit
+import com.example.dailybloom.model.HabitType
 import com.example.dailybloom.viewmodel.HabitListViewModel
 
-class HabitTrackerFragment : Fragment() {
+class HabitListFragment : Fragment() {
 
     private lateinit var viewModel: HabitListViewModel
-    private lateinit var adapter: HabitAdapter
 
-    private var _binding: FragmentHabitTrackerBinding? = null
+    private var _binding: FragmentHabitsListBinding? = null
     private val binding get() = _binding!!
 
-    private var fragmentListener: HabitFragmentListener? = null
+    private var habitType: HabitType = HabitType.GOOD
+
+    private lateinit var adapter: HabitAdapter
+    private var fragmentListener: HabitViewPagerFragment.HabitFragmentListener? = null
 
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        fragmentListener = context as HabitFragmentListener
+        fragmentListener = context as? HabitViewPagerFragment.HabitFragmentListener
+            ?: throw RuntimeException("$context must implement HabitFragmentListener")
     }
 
     override fun onCreateView(
@@ -33,12 +37,11 @@ class HabitTrackerFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentHabitTrackerBinding.inflate(inflater, container, false)
+        _binding = FragmentHabitsListBinding.inflate(inflater, container, false)
+        arguments?.getString(ARG_HABIT_TYPE)?.let {
+            habitType = HabitType.fromString(it)
+        }
         return binding.root
-    }
-
-    companion object {
-        fun newInstance() = HabitTrackerFragment()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -47,35 +50,25 @@ class HabitTrackerFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity())[HabitListViewModel::class.java]
 
         setupRecyclerView()
-        setupFAB()
         observeViewModel()
     }
 
     private fun setupRecyclerView() {
-        adapter = HabitAdapter { openEditScreen(it) }
+        adapter = HabitAdapter { habit -> openEditScreen(habit) }
         binding.habitRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            adapter = this@HabitTrackerFragment.adapter
+            adapter = this@HabitListFragment.adapter
         }
-    }
-
-    private fun updateHabitList(habits: Map<String, Habit>) {
-        adapter.submitList(habits.values.toList())
     }
 
     private fun openEditScreen(habit: Habit) {
         fragmentListener?.onEditHabit(habit)
     }
 
-    private fun setupFAB() {
-        binding.fab.setOnClickListener {
-            fragmentListener?.onCreateNewHabit()
-        }
-    }
-
     private fun observeViewModel() {
         viewModel.habits.observe(viewLifecycleOwner) { habits ->
-            updateHabitList(habits)
+            val filteredHabits = habits.values.filter { it.type == habitType }
+            adapter.submitList(filteredHabits)
         }
     }
 
@@ -84,13 +77,17 @@ class HabitTrackerFragment : Fragment() {
         _binding = null
     }
 
-    override fun onDetach() {
-        super.onDetach()
-        fragmentListener = null
-    }
+    companion object {
+        private const val ARG_HABIT_TYPE = "habitType"
 
-    interface HabitFragmentListener {
-        fun onCreateNewHabit()
-        fun onEditHabit(habit: Habit)
+        fun newInstance(habitType: String): HabitListFragment {
+            return HabitListFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_HABIT_TYPE, habitType)
+                }
+            }
+        }
     }
 }
+
+

@@ -10,20 +10,27 @@ import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.dailybloom.databinding.FragmentHabitViewPagerBinding
 import com.example.dailybloom.model.Habit
+import com.example.dailybloom.model.HabitType
 import com.google.android.material.tabs.TabLayoutMediator
 
-class HabitViewPagerFragment : Fragment(), HabitTrackerFragment.HabitFragmentListener {
+// класс - контейнер для переключения между Good/Bad Habits через ViewPager2
 
-    // вероятно лучше использовать LiveData
+class HabitViewPagerFragment : Fragment() {
 
     private var _binding: FragmentHabitViewPagerBinding? = null
     private val binding get() = _binding!!
 
-    private var fragmentListener: HabitTrackerFragment.HabitFragmentListener? = null
+    private var fragmentListener: HabitFragmentListener? = null
+
+    interface HabitFragmentListener {
+        fun onCreateNewHabit()
+        fun onEditHabit(habit: Habit)
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        fragmentListener = context as HabitTrackerFragment.HabitFragmentListener
+        fragmentListener = context as? HabitFragmentListener
+            ?: throw RuntimeException("$context must implement HabitFragmentListener")
     }
 
     override fun onCreateView(
@@ -39,6 +46,7 @@ class HabitViewPagerFragment : Fragment(), HabitTrackerFragment.HabitFragmentLis
         super.onViewCreated(view, savedInstanceState)
 
         setupViewPager()
+        setupFAB()
     }
 
     private fun setupViewPager() {
@@ -58,29 +66,29 @@ class HabitViewPagerFragment : Fragment(), HabitTrackerFragment.HabitFragmentLis
         }.attach()
     }
 
+    private fun setupFAB() {
+        binding.fab.setOnClickListener {
+            fragmentListener?.onCreateNewHabit()
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
-    override fun onCreateNewHabit() {
-        fragmentListener?.onCreateNewHabit()
-    }
-
-    override fun onEditHabit(habit: Habit) {
-        fragmentListener?.onEditHabit(habit)
-    }
-
-    companion object {
-        fun newInstance() = HabitViewPagerFragment()
+    override fun onDetach() {
+        super.onDetach()
+        fragmentListener = null
     }
 
     class PagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
         override fun getItemCount(): Int = 2
+
         override fun createFragment(position: Int): Fragment {
             return when (position) {
-                0 -> GoodHabitsFragment.newInstance()
-                1 -> BadHabitsFragment.newInstance()
+                0 -> HabitListFragment.newInstance(HabitType.toDisplayString(HabitType.GOOD))
+                1 -> HabitListFragment.newInstance(HabitType.toDisplayString(HabitType.BAD))
                 else -> throw IllegalArgumentException("Invalid position: $position")
             }
         }
