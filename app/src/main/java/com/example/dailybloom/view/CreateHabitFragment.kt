@@ -10,11 +10,12 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
+import com.example.dailybloom.R
 import com.example.dailybloom.databinding.FragmentCreateHabitBinding
 import com.example.dailybloom.model.Habit
 import com.example.dailybloom.util.Constants
 import com.example.dailybloom.viewmodel.HabitEditViewModel
-import com.example.dailybloom.viewmodel.UiHabit
+import com.example.dailybloom.viewmodel.viewmodeldata.UiHabit
 
 
 class CreateHabitFragment : Fragment() {
@@ -164,8 +165,8 @@ class CreateHabitFragment : Fragment() {
         if (!isSaved) {
             with(binding) {
                 val state = viewModel.uiState.value ?: return false
-                if (state.title.isBlank()) etHabitTitle.error = "Enter a title"
-                if (state.frequency.isBlank()) etHabitFrequency.error = "Enter frequency"
+                if (state.title.isBlank()) etHabitTitle.error = getString(R.string.error_empty_title)
+                if (state.frequency.isBlank()) etHabitFrequency.error = getString(R.string.error_empty_frequency)
                 Log.d("SaveHabit", "Frequency value: ${state.frequency}")
             }
         }

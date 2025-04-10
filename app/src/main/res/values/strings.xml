@@ -16,6 +16,8 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="error_empty_title">Enter a title</string>
+    <string name="error_empty_frequency">Enter frequency</string>
     <string name="filter_and_sort_habits">Filter and sort habits</string>
+
 
 </resources>
