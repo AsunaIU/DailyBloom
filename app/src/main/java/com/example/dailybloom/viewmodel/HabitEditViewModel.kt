@@ -1,7 +1,5 @@
 package com.example.dailybloom.viewmodel
 
-import android.graphics.Color
-import android.os.Parcelable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -13,18 +11,7 @@ import com.example.dailybloom.model.HabitRepository
 import com.example.dailybloom.model.HabitType
 import com.example.dailybloom.model.Periodicity
 import com.example.dailybloom.model.Priority
-import kotlinx.parcelize.Parcelize
-
-@Parcelize
-data class UiHabit(
-    val title: String = "",
-    val description: String = "",
-    val priorityPos: Int = Priority.MEDIUM.ordinal,
-    val typeId: Int = R.id.rbHabitGood,
-    val frequency: String = "1",
-    val periodicityPos: Int = Periodicity.DAY.ordinal,
-    val selectedColor: Int = Color.WHITE
-) : Parcelable
+import com.example.dailybloom.viewmodel.viewmodeldata.UiHabit
 
 class HabitEditViewModel(handle: SavedStateHandle) : ViewModel(), HabitChangeListener {
 
@@ -45,19 +32,7 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel(), HabitChangeLis
 
     fun setCurrentHabit(habit: Habit) {
         currentHabit = habit
-        _uiState.value = habit.toUiHabit()
-    }
-
-    private fun Habit.toUiHabit(): UiHabit {
-        return UiHabit(
-            title = this.title,
-            description = this.description,
-            priorityPos = this.priority.ordinal,
-            typeId = if (this.type == HabitType.GOOD) R.id.rbHabitGood else R.id.rbHabitBad,
-            frequency = this.frequency.toString(),
-            periodicityPos = this.periodicity.ordinal,
-            selectedColor = this.color
-        )
+        _uiState.value = Habit.toUiHabit(habit)
     }
 
     fun setUIState(state: UiHabit) {  // устанавливаем новое состояние UI вместо текущего
