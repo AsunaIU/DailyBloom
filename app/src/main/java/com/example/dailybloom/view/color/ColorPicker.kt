@@ -1,4 +1,4 @@
-package com.example.dailybloom.view
+package com.example.dailybloom.view.color
 
 import android.content.Context
 import android.graphics.Color

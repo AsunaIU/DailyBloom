@@ -1,11 +1,10 @@
-package com.example.dailybloom.view
+package com.example.dailybloom.view.adapter
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dailybloom.R
@@ -47,16 +46,6 @@ class HabitAdapter(
             type.text = HabitType.toDisplayString(habit.type)
             frequency.text = "${habit.frequency} per ${habit.periodicity}"
             itemView.setOnClickListener { onClick(habit) }
-        }
-    }
-
-    companion object HabitDiffCallback : DiffUtil.ItemCallback<Habit>() {
-        override fun areItemsTheSame(oldItem: Habit, newItem: Habit): Boolean {
-            return oldItem.id == newItem.id
-        }
-
-        override fun areContentsTheSame(oldItem: Habit, newItem: Habit): Boolean {
-            return oldItem == newItem
         }
     }
 }
