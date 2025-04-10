@@ -18,8 +18,7 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel(), HabitChangeLis
     private val _uiState = MutableLiveData(UiHabit()) // создаётся объект UIState с значениями по умолчанию
     val uiState: LiveData<UiHabit> = _uiState
 
-    private val _habits = MutableLiveData(HabitRepository.getHabits())
-    val habits: LiveData<Map<String, Habit>> = _habits
+    val habits: LiveData<Map<String, Habit>> = HabitRepository.habits
 
     private var currentHabit: Habit? = null
 
@@ -104,12 +103,10 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel(), HabitChangeLis
         } else {
             HabitRepository.updateHabit(currentHabitId, habit)
         }
-
         return true
     }
 
     override fun onHabitsChanged(habits: Map<String, Habit>) {
-        _habits.postValue(habits)
     }
 
     override fun onCleared() {

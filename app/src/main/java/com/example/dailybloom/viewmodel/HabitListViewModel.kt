@@ -13,11 +13,9 @@ import com.example.dailybloom.viewmodel.viewmodeldata.SortOption
 
 class HabitListViewModel : ViewModel() {
 
-    private val _habits = MutableLiveData(HabitRepository.getHabits())
-    val habits: LiveData<Map<String, Habit>> = _habits
+    val habits: LiveData<Map<String, Habit>> = HabitRepository.habits
 
     private val habitsListener = HabitChangeListener { habits ->
-        _habits.value = habits
         applyFilters()
     }
 
@@ -64,7 +62,7 @@ class HabitListViewModel : ViewModel() {
         // если значение LiveData не null - получаем текущий объект FilterCriteria с параметрами
         // если null - создаем новый объект со значениями по умолчанию
 
-        val allHabits = _habits.value?.values?.toList() ?: emptyList()
+        val allHabits = habits.value?.values?.toList() ?: emptyList()
         // получаем полный список привычек
 
         var filteredHabits = allHabits
