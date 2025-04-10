@@ -8,9 +8,9 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.activityViewModels
 import com.example.dailybloom.databinding.FragmentHabitFilterBinding
 import com.example.dailybloom.model.Priority
-import com.example.dailybloom.viewmodel.FilterCriteria
+import com.example.dailybloom.viewmodel.viewmodeldata.FilterCriteria
 import com.example.dailybloom.viewmodel.HabitListViewModel
-import com.example.dailybloom.viewmodel.SortOption
+import com.example.dailybloom.viewmodel.viewmodeldata.SortOption
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 
@@ -51,16 +51,16 @@ class HabitFilterFragment : BottomSheetDialogFragment()  {
                 viewModel.updateSearchQuery(text.toString())
             }
 
-            chipCreationDate.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) viewModel.updateSortOption(SortOption.CREATION_DATE)
+            chipCreationDate.setOnClickListener {
+                viewModel.updateSortOption(SortOption.CREATION_DATE)
             }
 
-            chipPriority.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) viewModel.updateSortOption(SortOption.PRIORITY)
+            chipPriority.setOnClickListener {
+                viewModel.updateSortOption(SortOption.PRIORITY)
             }
 
-            chipAlphabetically.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) viewModel.updateSortOption(SortOption.ALPHABETICALLY)
+            chipAlphabetically.setOnClickListener {
+                viewModel.updateSortOption(SortOption.ALPHABETICALLY)
             }
 
             val priorityChips = listOf(chipHigh, chipMedium, chipLow)
@@ -104,8 +104,11 @@ class HabitFilterFragment : BottomSheetDialogFragment()  {
                 etSearch.setText(criteria.searchQuery)
             }
 
-            chipCreationDate.isChecked = criteria.sortOption == SortOption.CREATION_DATE
-            chipAlphabetically.isChecked = criteria.sortOption == SortOption.ALPHABETICALLY
+            when (criteria.sortOption) {
+                SortOption.CREATION_DATE -> chipCreationDate.isChecked = true
+                SortOption.PRIORITY -> chipPriority.isChecked = true
+                SortOption.ALPHABETICALLY -> chipAlphabetically.isChecked = true
+            }
 
             chipHigh.isChecked = Priority.HIGH in criteria.priorityFilters
             chipMedium.isChecked = Priority.MEDIUM in criteria.priorityFilters
@@ -117,6 +120,7 @@ class HabitFilterFragment : BottomSheetDialogFragment()  {
         with(binding) {
             etSearch.text?.clear()
             chipCreationDate.isChecked = true
+            chipPriority.isChecked = false
             chipAlphabetically.isChecked = false
             chipHigh.isChecked = false
             chipMedium.isChecked = false
@@ -127,5 +131,4 @@ class HabitFilterFragment : BottomSheetDialogFragment()  {
         super.onDestroyView()
         _binding = null
     }
-
 }

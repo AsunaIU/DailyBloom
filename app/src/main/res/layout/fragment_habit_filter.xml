@@ -50,7 +50,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:orientation="vertical"
-        app:layout_constraintTop_toBottomOf="@id/tvSortByLabel">
+        app:layout_constraintTop_toBottomOf="@id/tvSortByLabel"
+        app:singleSelection="true"
+        app:selectionRequired="true" >
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipCreationDate"
@@ -109,6 +111,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Low" />
+
     </com.google.android.material.chip.ChipGroup>
 
     <Button
