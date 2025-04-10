@@ -30,7 +30,6 @@ object HabitRepository {
 
     fun getHabits(): Map<String, Habit> = habits.toMap()
 
-
     // Функции управления слушателями
 
     fun addListener(listener: HabitChangeListener) {

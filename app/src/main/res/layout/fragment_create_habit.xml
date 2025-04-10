@@ -140,7 +140,7 @@
             android:textStyle="bold" />
 
         <!-- Интеграция ColorPicker -->
-        <com.example.dailybloom.view.ColorPicker
+        <com.example.dailybloom.view.color.ColorPicker
             android:id="@+id/colorPicker"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

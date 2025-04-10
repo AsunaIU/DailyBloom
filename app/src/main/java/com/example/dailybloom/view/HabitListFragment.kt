@@ -12,6 +12,7 @@ import com.example.dailybloom.databinding.FragmentHabitsListBinding
 import com.example.dailybloom.model.Habit
 import com.example.dailybloom.model.HabitType
 import com.example.dailybloom.util.Constants
+import com.example.dailybloom.view.adapter.HabitAdapter
 import com.example.dailybloom.viewmodel.HabitListViewModel
 
 class HabitListFragment : Fragment() {
