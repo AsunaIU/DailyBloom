@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
+import android.widget.Spinner
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import com.example.dailybloom.R
@@ -73,22 +74,24 @@ class CreateHabitFragment : Fragment() {
         }
     }
 
+    // восстанавливает состояние UI из Bundle
     private fun restoreState(savedInstanceState: Bundle?) {
         savedInstanceState?.getParcelable<UiHabit>(Constants.KEY_UI_STATE)?.let {
             viewModel.setUIState(it)
         }
     }
 
+    // фрагмент наблюдает за LiveData из ViewModel (uiState) и вызывает updateUI при изменениях
     private fun setupObservers() {
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             updateUI(state)
         }
     }
 
-    // обновление UI в соответствии с переданным состоянием
+    // обновление UI при изменении состояния UiHabit
     private fun updateUI(state: UiHabit) {
         with(binding) {
-            if (!etHabitTitle.hasFocus()) etHabitTitle.setText(state.title) // поле не в фокусе (т.е. не вводятся данные)
+            if (!etHabitTitle.hasFocus()) etHabitTitle.setText(state.title) // если поле не в фокусе (т.е. не вводятся данные)
             if (!etHabitDescription.hasFocus()) etHabitDescription.setText(state.description)
             if (!etHabitFrequency.hasFocus()) etHabitFrequency.setText(state.frequency)
 
@@ -99,8 +102,11 @@ class CreateHabitFragment : Fragment() {
         }
     }
 
+    // получение данных UI из пользовательского ввода и передача во ViewModel
     private fun setupUI() {
         with(binding) {
+
+            // после каждого изменения полей отправляем новое значение во ViewModel (если поле в фокусе)
             etHabitTitle.doAfterTextChanged {
                 if (etHabitTitle.hasFocus()) {
                     viewModel.updateUIState(title = it.toString())
@@ -116,33 +122,14 @@ class CreateHabitFragment : Fragment() {
                     viewModel.updateUIState(frequency = it.toString())
                 }
             }
-            spinnerPriority.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    viewModel.updateUIState(priorityPos = position)
-                }
 
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            spinnerPriority.onItemSelected { position ->
+                viewModel.updateUIState(priorityPos = position)  // position - индекс выбранного пункта
             }
 
-            spinnerFrequencyUnit.onItemSelectedListener =
-                object : AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(
-                        parent: AdapterView<*>?,
-                        view: View?,
-                        position: Int,
-                        id: Long
-                    ) {
-                        viewModel.updateUIState(periodicityPos = position)
-                    }
-
-                    override fun onNothingSelected(parent: AdapterView<*>?) {}
-                }
-
+            spinnerFrequencyUnit.onItemSelected { position ->
+                viewModel.updateUIState(periodicityPos = position)
+            }
             rgHabitType.setOnCheckedChangeListener { _, checkedId ->
                 viewModel.updateUIState(typeId = checkedId)
             }
@@ -151,6 +138,7 @@ class CreateHabitFragment : Fragment() {
                 viewModel.updateColor(color)
             }
 
+            // при нажатии на кнопку (если saveHabit() вернул true) уведомляем fragmentListener
             btnSaveHabit.setOnClickListener {
                 if (saveHabit()) {
                     fragmentListener?.onHabitSaved()
@@ -180,5 +168,19 @@ class CreateHabitFragment : Fragment() {
 
     interface CreateHabitListener {
         fun onHabitSaved()
+    }
+    // интерфейс - способ уведомить Activity о том, что фрагмент успешно сохранил привычку
+    // контракт: «любая внешняя сущность (обычно Activity), желающая реагировать на событие “привычка сохранена”, должна реализовать этот метод»
+}
+
+
+// extension для Spinner (централизует пустую реализацию onNothingSelected)
+fun Spinner.onItemSelected(action: (position: Int) -> Unit) {
+    onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        override fun onItemSelected(
+            parent: AdapterView<*>, view: View?, position: Int, id: Long
+        ) = action(position)
+
+        override fun onNothingSelected(parent: AdapterView<*>) = Unit
     }
 }
