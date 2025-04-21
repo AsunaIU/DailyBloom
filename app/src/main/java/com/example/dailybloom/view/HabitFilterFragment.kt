@@ -21,6 +21,9 @@ class HabitFilterFragment : BottomSheetDialogFragment()  {
 
     private val viewModel: HabitListViewModel by activityViewModels()
 
+    // копия фильтра, накапливает изменения перед их применением
+    private var localCriteria: FilterCriteria = FilterCriteria()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -33,8 +36,11 @@ class HabitFilterFragment : BottomSheetDialogFragment()  {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // копирует текущее значение filterCriteria из ViewModel в localCriteria
+        viewModel.filterCriteria.value?.let { localCriteria = it.copy() }
+
+        updateUIFromCriteria(localCriteria)
         setupListeners()
-        observeViewModel()
     }
 
     companion object {
@@ -47,40 +53,44 @@ class HabitFilterFragment : BottomSheetDialogFragment()  {
 
     private fun setupListeners() {
         with(binding) {
+
+            // слушатели нажатий обновляют localFilterCriteria
             etSearch.doAfterTextChanged { text ->
-                viewModel.updateSearchQuery(text.toString())
+                localCriteria = localCriteria.copy(searchQuery = text.toString())
             }
 
             chipCreationDate.setOnClickListener {
-                viewModel.updateSortOption(SortOption.CREATION_DATE)
+                localCriteria = localCriteria.copy(sortOption = SortOption.CREATION_DATE)
             }
 
             chipPriority.setOnClickListener {
-                viewModel.updateSortOption(SortOption.PRIORITY)
+                localCriteria = localCriteria.copy(sortOption = SortOption.PRIORITY)
             }
 
             chipAlphabetically.setOnClickListener {
-                viewModel.updateSortOption(SortOption.ALPHABETICALLY)
+                localCriteria = localCriteria.copy(sortOption = SortOption.ALPHABETICALLY)
             }
 
             val priorityChips = listOf(chipHigh, chipMedium, chipLow)
             priorityChips.forEach { chip ->
                 chip.setOnCheckedChangeListener { _, _ ->
-                    updatePriorityFilters()
+                    updateLocalPriorityFilters()
                 }
             }
 
             btnApplyFilters.setOnClickListener {
+                applyFiltersToViewModel()
                 dismiss()
             }
 
             btnResetFilters.setOnClickListener {
                 resetUI()
+                localCriteria = FilterCriteria()
                 viewModel.resetFilters()
             }
         }
     }
-    private fun updatePriorityFilters() {
+    private fun updateLocalPriorityFilters() {
         val selectedPriorities = mutableSetOf<Priority>()
 
         with(binding) {
@@ -89,13 +99,11 @@ class HabitFilterFragment : BottomSheetDialogFragment()  {
             if (chipLow.isChecked) selectedPriorities.add(Priority.LOW)
         }
 
-        viewModel.updatePriorityFilters(selectedPriorities)
+        localCriteria = localCriteria.copy (priorityFilters = selectedPriorities)
     }
 
-    private fun observeViewModel() {
-        viewModel.filterCriteria.observe(viewLifecycleOwner) { criteria ->
-            updateUIFromCriteria(criteria)
-        }
+    private fun applyFiltersToViewModel() {
+        viewModel.updateFilters(localCriteria)
     }
 
     private fun updateUIFromCriteria(criteria: FilterCriteria) {

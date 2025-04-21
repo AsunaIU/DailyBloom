@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="CustomFilterChip" parent="@style/Widget.MaterialComponents.Chip.Choice">
+
+        <!-- прозрачный фон по‑умолчанию -->
+        <item name="chipSurfaceColor">@android:color/transparent</item>
+
+        <!-- селектор для pressed/checked/normal -->
+        <item name="chipBackgroundColor">@color/chip_selector</item>
+
+        <item name="chipStrokeColor">@color/chip_contour</item>
+        <item name="chipStrokeWidth">1dp</item>
+    </style>
+
+</resources>

@@ -56,18 +56,30 @@
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipCreationDate"
+            style="@style/CustomFilterChip"
+            android:checkable="true"
+            android:clickable="true"
+            android:focusable="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Creation Date" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipPriority"
+            style="@style/CustomFilterChip"
+            android:checkable="true"
+            android:clickable="true"
+            android:focusable="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Priority" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipAlphabetically"
+            style="@style/CustomFilterChip"
+            android:checkable="true"
+            android:clickable="true"
+            android:focusable="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Alphabetically" />
