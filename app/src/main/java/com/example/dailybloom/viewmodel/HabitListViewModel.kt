@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import com.example.dailybloom.model.Habit
 import com.example.dailybloom.model.HabitChangeListener
 import com.example.dailybloom.model.HabitRepository
-import com.example.dailybloom.model.Priority
 import com.example.dailybloom.viewmodel.viewmodeldata.FilterCriteria
 import com.example.dailybloom.viewmodel.viewmodeldata.SortOption
 
@@ -32,23 +31,13 @@ class HabitListViewModel : ViewModel() {
         applyFilters()
     }
 
-    fun updateSearchQuery(query: String) {
-        _filterCriteria.value = _filterCriteria.value?.copy(searchQuery = query)
-        applyFilters()
-    }
-
-    fun updateSortOption(sortOption: SortOption) {
-        _filterCriteria.value = _filterCriteria.value?.copy(sortOption = sortOption)
-        applyFilters()
-    }
-
     fun toggleSortDirection() {
         _filterCriteria.value = _filterCriteria.value?.copy(ascending = !(_filterCriteria.value?.ascending ?: true))
         applyFilters()
     }
 
-    fun updatePriorityFilters(priorities: Set<Priority>) {
-        _filterCriteria.value = _filterCriteria.value?.copy(priorityFilters = priorities)
+    fun updateFilters(criteria: FilterCriteria) {
+        _filterCriteria.value = criteria
         applyFilters()
     }
 
