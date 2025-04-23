@@ -2,6 +2,7 @@ package com.example.dailybloom.data.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverter
 import com.example.dailybloom.model.Habit
 import com.example.dailybloom.model.HabitType
 import com.example.dailybloom.model.Periodicity
@@ -19,6 +20,7 @@ data class HabitEntity(
     val color: Int,
     val createdAt: Long
 ) {
+
     companion object {
         fun fromHabit(habit: Habit): HabitEntity {
             return HabitEntity(
@@ -33,7 +35,6 @@ data class HabitEntity(
                 createdAt = habit.createdAt
             )
         }
-
         fun toHabit(entity: HabitEntity): Habit {
             return Habit(
                 id = entity.id,

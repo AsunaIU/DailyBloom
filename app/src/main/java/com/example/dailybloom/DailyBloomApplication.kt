@@ -2,7 +2,7 @@ package com.example.dailybloom
 
 import android.app.Application
 import com.example.dailybloom.data.local.HabitDatabase
-import com.example.dailybloom.model.HabitRepository
+import com.example.dailybloom.data.local.HabitRepository
 
 class DailyBloomApplication : Application() {
     override fun onCreate() {

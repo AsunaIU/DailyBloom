@@ -1,12 +1,14 @@
-package com.example.dailybloom.model
+package com.example.dailybloom.data.local
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
-import com.example.dailybloom.data.local.HabitDatabase
-import com.example.dailybloom.data.local.HabitEntity
+import com.example.dailybloom.model.Habit
+import com.example.dailybloom.model.HabitChangeListener
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ProcessLifecycleOwner
 
 // управляет хранилищем привычек (habits) и уведомляет listeners об изменениях
 // работает как менеджер данных, предоставляя интерфейс для добавления, обновления, удаления и получения списка привычек
@@ -16,23 +18,35 @@ object HabitRepository {
     private lateinit var database: HabitDatabase
     private val listeners = CopyOnWriteArrayList<WeakReference<HabitChangeListener>>()
 
-    private val _habits = MediatorLiveData<Map<String, Habit>>()
+    private val _habits = MutableLiveData<Map<String, Habit>>()
     val habits: LiveData<Map<String, Habit>> = _habits
+
+    private var habitsObserver: Observer<Map<String, Habit>>? = null
 
     fun initialize(appDatabase: HabitDatabase) {
         database = appDatabase
 
-        val dbSource = database.habitDao().getAllHabits().map { habitEntities ->
+        val sourceLiveData = database.habitDao().getAllHabits()
+
+        val transformedLiveData = sourceLiveData.map { habitEntities ->
+
             habitEntities.associate { entity ->
-                val habit = HabitEntity.toHabit(entity)
-                habit.id to habit
+                val habit = HabitEntity.toHabit(entity) // преобразуем HabitEntity в Habit - «значение»
+                habit.id to habit // создаём пару (ключ → значение): id привычки — «ключ», объект Habit — «значение»
             }
         }
-        _habits.addSource(dbSource) { habitMap ->
+
+        habitsObserver = Observer { habitMap ->
             _habits.value = habitMap
             notifyListeners()
         }
-    }
+
+        transformedLiveData.observe(
+            ProcessLifecycleOwner.get(),
+            habitsObserver!!
+        )
+    }  // подписчики (все компоненты наблюдающие за HabitRepository.habit) получают обновления
+
 
     // Функции управления привычками
 
@@ -52,6 +66,7 @@ object HabitRepository {
     }
 
     fun getHabits(): Map<String, Habit> = _habits.value ?: emptyMap()
+
 
     // Функции управления слушателями
 
