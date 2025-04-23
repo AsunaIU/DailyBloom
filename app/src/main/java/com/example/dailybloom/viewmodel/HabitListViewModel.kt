@@ -1,60 +1,52 @@
 package com.example.dailybloom.viewmodel
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.dailybloom.model.Habit
 import com.example.dailybloom.model.HabitChangeListener
-import com.example.dailybloom.model.HabitRepository
+import com.example.dailybloom.data.local.HabitRepository
 import com.example.dailybloom.viewmodel.viewmodeldata.FilterCriteria
 import com.example.dailybloom.viewmodel.viewmodeldata.SortOption
 
 
 class HabitListViewModel : ViewModel() {
 
-    val habits: LiveData<Map<String, Habit>> = HabitRepository.habits
-
-    private val habitsListener = HabitChangeListener { habits ->
-        applyFilters()
-    }
+    val repositoryHabits: LiveData<Map<String, Habit>> = HabitRepository.habits
 
     private val _filterCriteria = MutableLiveData(FilterCriteria())
     val filterCriteria: LiveData<FilterCriteria> = _filterCriteria
 
-    private val _filteredHabits = MutableLiveData<List<Habit>>(emptyList())
-    val filteredHabits: LiveData<List<Habit>> = _filteredHabits
+    private val _filteredHabits = MediatorLiveData<List<Habit>>().apply {
+        addSource(repositoryHabits) { habits ->
+            value = applyFilters(habits.values.toList(), _filterCriteria.value ?: FilterCriteria())
+        }
 
-    init {
-        HabitRepository.addListener(habitsListener)
-        applyFilters()
+        addSource(_filterCriteria) { criteria ->
+            value = applyFilters(repositoryHabits.value?.values?.toList() ?: emptyList(), criteria)
+        }
     }
 
+    val filteredHabits: LiveData<List<Habit>> = _filteredHabits
+
+
     fun toggleSortDirection() {
-        _filterCriteria.value = _filterCriteria.value?.copy(ascending = !(_filterCriteria.value?.ascending ?: true))
-        applyFilters()
+        _filterCriteria.value =
+            _filterCriteria.value?.copy(ascending = !(_filterCriteria.value?.ascending ?: true))
     }
 
     fun updateFilters(criteria: FilterCriteria) {
         _filterCriteria.value = criteria
-        applyFilters()
     }
 
     fun resetFilters() {
         _filterCriteria.value = FilterCriteria()
-        applyFilters()
     }
 
     // Основной метод фильтрации
-    private fun applyFilters() {
-
-        val criteria = _filterCriteria.value ?: FilterCriteria()
-        // если значение LiveData не null - получаем текущий объект FilterCriteria с параметрами
-        // если null - создаем новый объект со значениями по умолчанию
-
-        val allHabits = habits.value?.values?.toList() ?: emptyList()
-        // получаем полный список привычек
-
-        var filteredHabits = allHabits
+    private fun applyFilters(habits: List<Habit>, criteria: FilterCriteria): List<Habit> {
+        var filteredHabits = habits
 
         if (criteria.searchQuery.isNotBlank()) {
             filteredHabits = filteredHabits.filter {
@@ -73,15 +65,11 @@ class HabitListViewModel : ViewModel() {
             SortOption.ALPHABETICALLY -> filteredHabits.sortedBy { it.title }
         }
 
-        // Изменение порядка сортировки (ascending = false)
+        // изменение порядка сортировки (ascending = false)
         if (!criteria.ascending) {
             filteredHabits = filteredHabits.reversed()
         }
-        _filteredHabits.postValue(filteredHabits)
-    }
 
-    override fun onCleared() {
-        super.onCleared()
-        HabitRepository.removeListener(habitsListener)
+        return filteredHabits
     }
 }
