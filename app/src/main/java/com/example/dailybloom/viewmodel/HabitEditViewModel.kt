@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.example.dailybloom.R
 import com.example.dailybloom.model.Habit
 import com.example.dailybloom.model.HabitChangeListener
-import com.example.dailybloom.model.HabitRepository
+import com.example.dailybloom.data.local.HabitRepository
 import com.example.dailybloom.model.HabitType
 import com.example.dailybloom.model.Periodicity
 import com.example.dailybloom.model.Priority
@@ -106,7 +106,13 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel(), HabitChangeLis
         return true
     }
 
+    fun deleteHabit(habitId: String): Boolean {
+        HabitRepository.removeHabit(habitId)
+        return true
+    }
+
     override fun onHabitsChanged(habits: Map<String, Habit>) {
+    // не нарушает ISP?, потому что интерфейс HabitChangeListener задаёт один метод, и класс всё же «зависит» от него
     }
 
     override fun onCleared() {

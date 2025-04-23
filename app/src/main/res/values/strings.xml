@@ -19,5 +19,10 @@
     <string name="error_empty_frequency">Enter frequency</string>
     <string name="filter_and_sort_habits">Filter and sort habits</string>
 
+    <!-- btnDeleteHabit -->
+    <string name="delete_habit_title">Delete Habit</string>
+    <string name="delete_habit_message">Are you sure you want to delete this habit?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
 
 </resources>

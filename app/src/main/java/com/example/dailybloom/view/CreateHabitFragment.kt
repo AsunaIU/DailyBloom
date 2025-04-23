@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Spinner
+import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import com.example.dailybloom.R
@@ -138,6 +139,11 @@ class CreateHabitFragment : Fragment() {
                 viewModel.updateColor(color)
             }
 
+            btnDeleteHabit.apply {
+                visibility = if (currentHabit != null) View.VISIBLE else View.GONE
+                setOnClickListener { showDeleteConfirmationDialog()}
+            }
+
             // при нажатии на кнопку (если saveHabit() вернул true) уведомляем fragmentListener
             btnSaveHabit.setOnClickListener {
                 if (saveHabit()) {
@@ -161,6 +167,20 @@ class CreateHabitFragment : Fragment() {
         return isSaved
     }
 
+    private fun showDeleteConfirmationDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.delete_habit_title))
+            .setMessage(getString(R.string.delete_habit_message))
+            .setPositiveButton(getString(R.string.delete)) { _, _ ->
+                currentHabit?.id?.let { habitId ->
+                    viewModel.deleteHabit(habitId)
+                    fragmentListener?.onHabitDeleted()
+                }
+            }
+            .setNegativeButton(getString(R.string.cancel), null)
+            .show()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -168,11 +188,11 @@ class CreateHabitFragment : Fragment() {
 
     interface CreateHabitListener {
         fun onHabitSaved()
+        fun onHabitDeleted()
     }
     // интерфейс - способ уведомить Activity о том, что фрагмент успешно сохранил привычку
     // контракт: «любая внешняя сущность (обычно Activity), желающая реагировать на событие “привычка сохранена”, должна реализовать этот метод»
 }
-
 
 // extension для Spinner (централизует пустую реализацию onNothingSelected)
 fun Spinner.onItemSelected(action: (position: Int) -> Unit) {

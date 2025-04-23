@@ -92,5 +92,9 @@ class MainActivity : AppCompatActivity(),
     override fun onHabitSaved() {
         navController.navigateUp()
     }
+
+    override fun onHabitDeleted() {
+        navController.navigateUp()
+    }
 }
 
