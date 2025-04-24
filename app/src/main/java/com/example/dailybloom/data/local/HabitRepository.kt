@@ -9,6 +9,10 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ProcessLifecycleOwner
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // управляет хранилищем привычек (habits) и уведомляет listeners об изменениях
 // работает как менеджер данных, предоставляя интерфейс для добавления, обновления, удаления и получения списка привычек
@@ -29,7 +33,6 @@ object HabitRepository {
         val sourceLiveData = database.habitDao().getAllHabits()
 
         val transformedLiveData = sourceLiveData.map { habitEntities ->
-
             habitEntities.associate { entity ->
                 val habit = HabitEntity.toHabit(entity) // преобразуем HabitEntity в Habit - «значение»
                 habit.id to habit // создаём пару (ключ → значение): id привычки — «ключ», объект Habit — «значение»
@@ -45,24 +48,45 @@ object HabitRepository {
             ProcessLifecycleOwner.get(),
             habitsObserver!!
         )
-    }  // подписчики (все компоненты наблюдающие за HabitRepository.habit) получают обновления
-
-
-    // Функции управления привычками
-
-    fun addHabit(habit: Habit) {
-        val habitEntity = HabitEntity.fromHabit(habit)
-        database.habitDao().insertHabit(habitEntity)
     }
 
-    fun updateHabit(habitId: String, updatedHabit: Habit) {
-        val habitToUpdate = updatedHabit.copy(id = habitId)
-        val habitEntity = HabitEntity.fromHabit(habitToUpdate)
-        database.habitDao().updateHabit(habitEntity)
+
+    // Корутины с suspend-функциями для возврата результатов
+
+    suspend fun addHabit(habit: Habit): Boolean {
+        return try {
+            val habitEntity = HabitEntity.fromHabit(habit)
+            withContext(Dispatchers.IO) {
+                database.habitDao().insertHabit(habitEntity)
+            }
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 
-    fun removeHabit(habitId: String) {  // на будущее - добавление функционала удаления привычки
-        database.habitDao().deleteHabit(habitId)
+    suspend fun updateHabit(habitId: String, updatedHabit: Habit): Boolean {
+        return try {
+            val habitToUpdate = updatedHabit.copy(id = habitId)
+            val habitEntity = HabitEntity.fromHabit(habitToUpdate)
+            withContext(Dispatchers.IO) {
+                database.habitDao().updateHabit(habitEntity)
+            }
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    suspend fun removeHabit(habitId: String): Boolean {
+        return try {
+            withContext(Dispatchers.IO) {
+                database.habitDao().deleteHabit(habitId)
+            }
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 
     fun getHabits(): Map<String, Habit> = _habits.value ?: emptyMap()

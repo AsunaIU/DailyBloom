@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.dailybloom.R
 import com.example.dailybloom.model.Habit
 import com.example.dailybloom.model.HabitChangeListener
@@ -12,11 +13,15 @@ import com.example.dailybloom.model.HabitType
 import com.example.dailybloom.model.Periodicity
 import com.example.dailybloom.model.Priority
 import com.example.dailybloom.viewmodel.viewmodeldata.UiHabit
+import kotlinx.coroutines.launch
 
 class HabitEditViewModel(handle: SavedStateHandle) : ViewModel(), HabitChangeListener {
 
     private val _uiState = MutableLiveData(UiHabit()) // создаётся объект UIState с значениями по умолчанию
     val uiState: LiveData<UiHabit> = _uiState
+
+    private val _operationStatus = MutableLiveData<OperationStatus>()
+    val operationStatus: LiveData<OperationStatus> = _operationStatus
 
     val habits: LiveData<Map<String, Habit>> = HabitRepository.habits
 
@@ -67,9 +72,18 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel(), HabitChangeLis
     }
 
     fun saveHabit(currentHabitId: String?): Boolean { // nullable-тип String? разделяет два сценария (создание новой привычки/обновление существующей)
-        if (!validateInput()) return false
 
-        val state = _uiState.value ?: return false
+        if (!validateInput()) {
+            _operationStatus.value = OperationStatus.Error("Invalid input data")
+            return false
+        }
+
+        val state = _uiState.value ?: run {
+            _operationStatus.value = OperationStatus.Error("UI state is null")
+            return false
+        }
+
+        _operationStatus.value = OperationStatus.InProgress
 
         val priority = Priority.entries[state.priorityPos]
         val type = if (state.typeId == R.id.rbHabitGood) HabitType.GOOD else HabitType.BAD
@@ -98,17 +112,35 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel(), HabitChangeLis
                 color = state.selectedColor
             )
         }
-        if (currentHabitId == null) {
-            HabitRepository.addHabit(habit)
-        } else {
-            HabitRepository.updateHabit(currentHabitId, habit)
+
+        viewModelScope.launch {
+            val result = if (currentHabitId == null) {
+                HabitRepository.addHabit(habit)
+            } else {
+                HabitRepository.updateHabit(currentHabitId, habit)
+            }
+
+            _operationStatus.value = if (result) {
+                OperationStatus.Success
+            } else {
+                OperationStatus.Error("Failed to save habit")
+            }
         }
         return true
     }
 
-    fun deleteHabit(habitId: String): Boolean {
-        HabitRepository.removeHabit(habitId)
-        return true
+    fun deleteHabit(habitId: String) {
+        _operationStatus.value = OperationStatus.InProgress
+
+        viewModelScope.launch {
+            val result = HabitRepository.removeHabit(habitId)
+
+            _operationStatus.value = if (result) {
+                OperationStatus.Success
+            } else {
+                OperationStatus.Error("Failed to delete habit")
+            }
+        }
     }
 
     override fun onHabitsChanged(habits: Map<String, Habit>) {
@@ -118,5 +150,11 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel(), HabitChangeLis
     override fun onCleared() {
         super.onCleared()
         HabitRepository.removeListener(this)
+    }
+
+    sealed class OperationStatus {
+        object InProgress : OperationStatus()
+        object Success : OperationStatus()
+        data class Error(val message: String) : OperationStatus()
     }
 }
