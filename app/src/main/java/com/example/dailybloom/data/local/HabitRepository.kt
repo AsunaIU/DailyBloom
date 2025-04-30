@@ -39,13 +39,13 @@ object HabitRepository {
             }
         }
 
-        habitsObserver = Observer { habitMap ->
+        habitsObserver = Observer { habitMap -> // observer, при каждом изменении данных: обновляет _habits, оповещает слушателей
             _habits.value = habitMap
             notifyListeners()
         }
 
-        transformedLiveData.observe(
-            ProcessLifecycleOwner.get(),
+        transformedLiveData.observe(      // подписываем Observer на transformedLiveData
+            ProcessLifecycleOwner.get(),  // используется ProcessLifecycleOwner, чтобы слушать, пока живо приложение
             habitsObserver!!
         )
     }
