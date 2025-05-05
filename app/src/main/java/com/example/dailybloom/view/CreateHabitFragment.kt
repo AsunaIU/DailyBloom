@@ -19,7 +19,6 @@ import com.example.dailybloom.util.Constants
 import com.example.dailybloom.viewmodel.HabitEditViewModel
 import com.example.dailybloom.viewmodel.viewmodeldata.UiHabit
 
-
 class CreateHabitFragment : Fragment() {
 
     private val viewModel: HabitEditViewModel by viewModels()

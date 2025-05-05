@@ -28,4 +28,7 @@ interface HabitDao {
 
     @Query("DELETE FROM habits WHERE id = :habitId")
     suspend fun deleteHabit(habitId: String)
+
+    @Query("SELECT * FROM habits")
+    suspend fun getAllHabitsSync(): List<HabitEntity>
 }
