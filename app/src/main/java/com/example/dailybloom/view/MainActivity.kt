@@ -84,7 +84,7 @@ class MainActivity : AppCompatActivity(),
 
     override fun onEditHabit(habit: Habit) {
         val bundle = Bundle().apply {
-            putParcelable(Constants.ARG_HABIT, habit)
+            putString(Constants.ARG_HABIT_ID, habit.id)
         }
         navController.navigate(R.id.createHabitFragment, bundle)
     }
