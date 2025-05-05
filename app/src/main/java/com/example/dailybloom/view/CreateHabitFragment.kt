@@ -14,7 +14,6 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import com.example.dailybloom.R
 import com.example.dailybloom.databinding.FragmentCreateHabitBinding
-import com.example.dailybloom.model.Habit
 import com.example.dailybloom.util.Constants
 import com.example.dailybloom.viewmodel.HabitEditViewModel
 import com.example.dailybloom.viewmodel.viewmodeldata.UiHabit
@@ -23,18 +22,18 @@ class CreateHabitFragment : Fragment() {
 
     private val viewModel: HabitEditViewModel by viewModels()
 
-    private var currentHabit: Habit? = null
-
     private var _binding: FragmentCreateHabitBinding? = null
     private val binding get() = _binding!!
 
     private var fragmentListener: CreateHabitListener? = null
 
     companion object {
-        fun newInstance(habit: Habit? = null): CreateHabitFragment {
+        fun newInstance(habitId: String? = null): CreateHabitFragment {
             val fragment = CreateHabitFragment()
             val args = Bundle()
-            args.putParcelable(Constants.ARG_HABIT, habit)
+            if (habitId != null) {
+                args.putString(Constants.ARG_HABIT_ID, habitId)
+            }
             fragment.arguments = args
             return fragment
         }
@@ -55,11 +54,6 @@ class CreateHabitFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        arguments?.getParcelable<Habit>(Constants.ARG_HABIT)?.let { // замена handleArguments(); передаем привычку в ViewModel
-                currentHabit = it
-                viewModel.setCurrentHabit(it)
-            }
 
         restoreState(savedInstanceState)
         setupUI()
@@ -99,6 +93,9 @@ class CreateHabitFragment : Fragment() {
             rgHabitType.check(state.typeId)
             spinnerFrequencyUnit.setSelection(state.periodicityPos)
             colorPicker.setSelectedColor(state.selectedColor)
+
+            // Показать/скрыть кнопку удаления в зависимости от того, редактируем ли мы существующую привычку
+            btnDeleteHabit.visibility = if (arguments?.getString(Constants.ARG_HABIT_ID) != null) View.VISIBLE else View.GONE
         }
     }
 
@@ -138,10 +135,7 @@ class CreateHabitFragment : Fragment() {
                 viewModel.updateColor(color)
             }
 
-            btnDeleteHabit.apply {
-                visibility = if (currentHabit != null) View.VISIBLE else View.GONE
-                setOnClickListener { showDeleteConfirmationDialog()}
-            }
+            btnDeleteHabit.setOnClickListener { showDeleteConfirmationDialog() }
 
             // при нажатии на кнопку (если saveHabit() вернул true) уведомляем fragmentListener
             btnSaveHabit.setOnClickListener {
@@ -153,7 +147,7 @@ class CreateHabitFragment : Fragment() {
     }
 
     private fun saveHabit(): Boolean {
-        val isSaved = viewModel.saveHabit(currentHabit?.id)
+        val isSaved = viewModel.saveHabit()
 
         if (!isSaved) {
             with(binding) {
@@ -171,10 +165,8 @@ class CreateHabitFragment : Fragment() {
             .setTitle(getString(R.string.delete_habit_title))
             .setMessage(getString(R.string.delete_habit_message))
             .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                currentHabit?.id?.let { habitId ->
-                    viewModel.deleteHabit(habitId)
-                    fragmentListener?.onHabitDeleted()
-                }
+                viewModel.deleteHabit()
+                fragmentListener?.onHabitDeleted()
             }
             .setNegativeButton(getString(R.string.cancel), null)
             .show()

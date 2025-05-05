@@ -12,7 +12,7 @@ import com.example.dailybloom.viewmodel.viewmodeldata.SortOption
 
 class HabitListViewModel : ViewModel() {
 
-    val repositoryHabits: LiveData<Map<String, Habit>> = HabitRepository.habits
+    private val repositoryHabits: LiveData<Map<String, Habit>> = HabitRepository.habits
 
     private val _filterCriteria = MutableLiveData(FilterCriteria())
     val filterCriteria: LiveData<FilterCriteria> = _filterCriteria
