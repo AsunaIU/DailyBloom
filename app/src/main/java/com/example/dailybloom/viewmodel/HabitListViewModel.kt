@@ -5,7 +5,6 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.dailybloom.model.Habit
-import com.example.dailybloom.model.HabitChangeListener
 import com.example.dailybloom.data.local.HabitRepository
 import com.example.dailybloom.viewmodel.viewmodeldata.FilterCriteria
 import com.example.dailybloom.viewmodel.viewmodeldata.SortOption

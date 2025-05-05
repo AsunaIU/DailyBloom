@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import com.example.dailybloom.model.Habit
-import com.example.dailybloom.model.HabitChangeListener
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
 import androidx.lifecycle.Observer
@@ -20,7 +19,6 @@ import kotlinx.coroutines.withContext
 object HabitRepository {
 
     private lateinit var database: HabitDatabase
-    private val listeners = CopyOnWriteArrayList<WeakReference<HabitChangeListener>>()
 
     private val _habits = MutableLiveData<Map<String, Habit>>()
     val habits: LiveData<Map<String, Habit>> = _habits
@@ -41,7 +39,6 @@ object HabitRepository {
 
         habitsObserver = Observer { habitMap -> // observer, при каждом изменении данных: обновляет _habits, оповещает слушателей
             _habits.value = habitMap
-            notifyListeners()
         }
 
         transformedLiveData.observe(      // подписываем Observer на transformedLiveData
@@ -90,25 +87,4 @@ object HabitRepository {
     }
 
     fun getHabits(): Map<String, Habit> = _habits.value ?: emptyMap()
-
-
-    // Функции управления слушателями
-
-    fun addListener(listener: HabitChangeListener) {
-        if (!listeners.any { it.get() == listener }) {
-            listeners.add(WeakReference(listener))
-        }
-    }
-
-    fun removeListener(listener: HabitChangeListener) {
-        listeners.removeIf { it.get() == listener || it.get() == null }
-    }
-
-    private fun notifyListeners() {
-        val currentHabits =
-            getHabits()   // метод getHabits() - возвращает копию коллекции, передаем ee listener
-        for (listener in listeners) {
-            listener.get()?.onHabitsChanged(currentHabits)
-        }
-    }
 }

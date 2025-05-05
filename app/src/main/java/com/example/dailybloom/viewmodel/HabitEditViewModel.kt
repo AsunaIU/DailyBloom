@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dailybloom.R
 import com.example.dailybloom.model.Habit
-import com.example.dailybloom.model.HabitChangeListener
 import com.example.dailybloom.data.local.HabitRepository
 import com.example.dailybloom.model.HabitType
 import com.example.dailybloom.model.Periodicity
@@ -15,7 +14,7 @@ import com.example.dailybloom.model.Priority
 import com.example.dailybloom.viewmodel.viewmodeldata.UiHabit
 import kotlinx.coroutines.launch
 
-class HabitEditViewModel(handle: SavedStateHandle) : ViewModel(), HabitChangeListener {
+class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
 
     private val _uiState = MutableLiveData(UiHabit()) // создаётся объект UIState с значениями по умолчанию
     val uiState: LiveData<UiHabit> = _uiState
@@ -28,7 +27,6 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel(), HabitChangeLis
     private var currentHabit: Habit? = null
 
     init {
-        HabitRepository.addListener(this)
         handle.get<Habit>("habit")?.let {
             setCurrentHabit(it)
         }
@@ -141,15 +139,6 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel(), HabitChangeLis
                 OperationStatus.Error("Failed to delete habit")
             }
         }
-    }
-
-    override fun onHabitsChanged(habits: Map<String, Habit>) {
-    // не нарушает ISP?, потому что интерфейс HabitChangeListener задаёт один метод, и класс всё же «зависит» от него
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        HabitRepository.removeListener(this)
     }
 
     sealed class OperationStatus {
