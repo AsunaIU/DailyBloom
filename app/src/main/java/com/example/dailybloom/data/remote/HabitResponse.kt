@@ -18,3 +18,8 @@ data class HabitResponse (
     @SerialName("color") val color: Int? = null,
     @SerialName("doneDates") val doneDates: List<Long> = emptyList(),
 )
+
+@Serializable
+data class UidResponse(
+    @SerialName("uid") val uid: String
+)

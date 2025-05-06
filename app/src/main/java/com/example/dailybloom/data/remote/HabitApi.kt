@@ -2,8 +2,8 @@ package com.example.dailybloom.data.remote
 
 import com.example.dailybloom.BuildConfig
 import retrofit2.http.Body
-import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.HTTP
 import retrofit2.http.Header
 import retrofit2.http.PUT
 
@@ -17,11 +17,11 @@ interface HabitApi {
     suspend fun addOrUpdateHabit(
         @Header("Authorization") token: String = BuildConfig.API_TOKEN,
         @Body habit: HabitResponse
-    ): HabitResponse
+    ): UidResponse
 
-    @DELETE("habit")
+    @HTTP(method = "DELETE", path = "habit", hasBody = true)
     suspend fun deleteHabit(
         @Header("Authorization") token: String = BuildConfig.API_TOKEN,
-        @Body habitUid: String
+        @Body uid: UidResponse
     )
 }

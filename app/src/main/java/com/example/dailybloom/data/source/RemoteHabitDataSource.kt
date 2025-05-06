@@ -4,7 +4,7 @@ import android.util.Log
 import com.example.dailybloom.data.remote.HabitMappers.toDomainModel
 import com.example.dailybloom.data.remote.HabitMappers.toRequestModel
 import com.example.dailybloom.data.remote.HabitApi
-import com.example.dailybloom.data.remote.HabitMappers.toUid
+import com.example.dailybloom.data.remote.UidResponse
 import com.example.dailybloom.model.Habit
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -43,7 +43,7 @@ class RemoteHabitDataSource(private val habitApi: HabitApi) : HabitDataSource {
 
     override suspend fun deleteHabit(habitId: String): Result<Unit> {
         return executeWithRetry {
-            habitApi.deleteHabit(habitUid = habitId)
+            habitApi.deleteHabit(uid = UidResponse(habitId))
         }
     }
 

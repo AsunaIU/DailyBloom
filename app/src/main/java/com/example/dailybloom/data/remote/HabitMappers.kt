@@ -43,6 +43,7 @@ object HabitMappers {
             },
             type = if (this.type == HabitType.GOOD) 0 else 1,
             frequency = this.frequency,
+            count = 1,
             date = this.createdAt,
             color = this.color
         )
