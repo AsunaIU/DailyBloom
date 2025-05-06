@@ -1,6 +1,5 @@
 package com.example.dailybloom.model
 
-import android.graphics.Color
 import android.os.Parcelable
 import com.example.dailybloom.R
 import com.example.dailybloom.viewmodel.viewmodeldata.UiHabit
@@ -10,13 +9,13 @@ import java.util.UUID
 @Parcelize
 data class Habit(
     val id: String = UUID.randomUUID().toString(),
-    var title: String = "",
-    var description: String = "",
-    var priority: Priority = Priority.MEDIUM,
-    var type: HabitType = HabitType.GOOD,
-    var frequency: Int = 1,
-    var periodicity: Periodicity = Periodicity.DAY,
-    var color: Int = Color.BLUE,
+    var title: String,
+    var description: String,
+    var priority: Priority,
+    var type: HabitType,
+    var frequency: Int,
+    var periodicity: Periodicity,
+    var color: Int,
     val createdAt: Long = System.currentTimeMillis(),
 ) : Parcelable {
 

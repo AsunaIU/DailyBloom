@@ -26,9 +26,14 @@ object HabitMappers {
         )
     }
 
-    fun Habit.toResponseModel(): HabitResponse {
+    fun HabitResponse.toUid(): String =
+        uid ?: throw IllegalStateException("Server did not return a uid")
+
+    fun Habit.toRequestModel(id: Boolean): HabitResponse {
+        val uid = if (id) this.id else null
+
         return HabitResponse(
-            uid = this.id,
+            uid = uid,
             title = this.title,
             description = this.description,
             priority = when (this.priority) {

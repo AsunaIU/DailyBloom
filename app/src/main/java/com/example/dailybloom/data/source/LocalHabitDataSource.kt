@@ -17,10 +17,19 @@ class LocalHabitDataSource(private val habitDao: HabitDao) : HabitDataSource {
         }
     }
 
-    override suspend fun saveHabit(habit: Habit): Result<Habit> = withContext(Dispatchers.IO) {
+    override suspend fun addHabit(habit: Habit): Result<Habit> = withContext(Dispatchers.IO) {
         try {
             habitDao.insertHabit(HabitEntity.fromHabit(habit))
             Result.success(habit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun updateHabit(habitId: String, updatedHabit: Habit): Result<Habit> = withContext(Dispatchers.IO) {
+        try {
+            habitDao.insertHabit(HabitEntity.fromHabit(updatedHabit))
+            Result.success(updatedHabit)
         } catch (e: Exception) {
             Result.failure(e)
         }
