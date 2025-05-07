@@ -1,5 +1,6 @@
 package com.example.dailybloom.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -15,29 +16,23 @@ import com.example.dailybloom.util.Constants
 import com.example.dailybloom.viewmodel.viewmodeldata.UiHabit
 import kotlinx.coroutines.launch
 
-class HabitEditViewModel(private val handle: SavedStateHandle) : ViewModel() {
+class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
 
-    private val _uiState =
-        MutableLiveData(UiHabit()) // создаётся объект UIState с значениями по умолчанию
+    private val _uiState = MutableLiveData(UiHabit()) // создаётся объект UIState с значениями по умолчанию
     val uiState: LiveData<UiHabit> = _uiState
 
-    private val _operationStatus = MutableLiveData<OperationStatus>()
-    val operationStatus: LiveData<OperationStatus> = _operationStatus
+    private val _operationStatus = MutableLiveData<OperationStatus?>()
+    val operationStatus: LiveData<OperationStatus?> = _operationStatus
 
     // ID редактируемой привычки, null - если создается новая привычка
     private val habitId: String? = handle.get<String>(Constants.ARG_HABIT_ID)
-
     val habits: LiveData<Map<String, Habit>> = HabitRepository.habits
-
-    private var currentHabit: Habit? = null
 
     init {
         loadHabitById()  // Попытаемся загрузить привычку по ID, если мы редактируем существующую привычку
     }
 
-    /**
-     * Загружаем привычку по идентификатору из репозитория, если идентификатор доступен
-     */
+    // Загружаем привычку по идентификатору из репозитория, если идентификатор доступен
     private fun loadHabitById() {
         habitId?.let { id ->
             habits.value?.get(id)?.let { habit ->
@@ -78,7 +73,8 @@ class HabitEditViewModel(private val handle: SavedStateHandle) : ViewModel() {
         periodicityPos: Int? = null
     ) {
         val current = _uiState.value ?: UiHabit()
-        ?: UiHabit() // current не null – либо используется текущее состояние, либо создаётся новое с дефолтными значениями
+        // current не null – либо используется текущее состояние, либо создаётся новое с дефолтными значениями
+
         _uiState.value = current.copy(
             title = title ?: current.title,
             description = description ?: current.description,
@@ -94,19 +90,18 @@ class HabitEditViewModel(private val handle: SavedStateHandle) : ViewModel() {
         return state.title.isNotBlank() && state.frequency.isNotBlank() && state.frequency.toIntOrNull() != null
     }
 
-    fun saveHabit(): Boolean { // nullable-тип String? разделяет два сценария (создание новой привычки/обновление существующей)
+    fun saveHabit() { // nullable-тип String? разделяет два сценария (создание новой привычки/обновление существующей)
 
         if (!validateInput()) {
             _operationStatus.value = OperationStatus.Error("Invalid input data")
-            return false
+            return
         }
+        _operationStatus.value = OperationStatus.InProgress
 
         val state = _uiState.value ?: run {
             _operationStatus.value = OperationStatus.Error("UI state is null")
-            return false
+            return
         }
-
-        _operationStatus.value = OperationStatus.InProgress
 
         val priority = Priority.entries[state.priorityPos]
         val type = if (state.typeId == R.id.rbHabitGood) HabitType.GOOD else HabitType.BAD
@@ -130,14 +125,12 @@ class HabitEditViewModel(private val handle: SavedStateHandle) : ViewModel() {
             } else {
                 HabitRepository.updateHabit(habitId, habit)
             }
+            Log.d("ViewModel", "$result")
 
-            _operationStatus.value = if (result) {
-                OperationStatus.Success
-            } else {
-                OperationStatus.Error("Failed to save habit")
-            }
+            _operationStatus.value =
+                if (result) OperationStatus.Success
+                else OperationStatus.Error("Failed to save habit")
         }
-        return true
     }
 
     fun deleteHabit() {
@@ -151,12 +144,15 @@ class HabitEditViewModel(private val handle: SavedStateHandle) : ViewModel() {
         viewModelScope.launch {
             val result = HabitRepository.removeHabit(habitId)
 
-            _operationStatus.value = if (result) {
-                OperationStatus.Success
-            } else {
-                OperationStatus.Error("Failed to delete habit")
-            }
+            _operationStatus.value =
+                if (result) OperationStatus.Success
+                else OperationStatus.Error("Failed to delete habit")
         }
+    }
+
+    // Сбрасывает статус операции, чтобы избежать повторных срабатываний при пересоздании UI
+    fun resetOperationStatus() {
+        _operationStatus.value = null
     }
 
     sealed class OperationStatus {

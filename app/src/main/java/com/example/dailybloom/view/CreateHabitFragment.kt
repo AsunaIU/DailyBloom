@@ -2,6 +2,7 @@ package com.example.dailybloom.view
 
 import android.content.Context
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -11,14 +12,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.example.dailybloom.R
 import com.example.dailybloom.databinding.FragmentCreateHabitBinding
 import com.example.dailybloom.util.Constants
 import com.example.dailybloom.viewmodel.HabitEditViewModel
 import com.example.dailybloom.viewmodel.viewmodeldata.UiHabit
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.launch
 
 class CreateHabitFragment : Fragment() {
 
@@ -28,6 +33,8 @@ class CreateHabitFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var fragmentListener: CreateHabitListener? = null
+
+    private var lastAction: LastAction = LastAction.NONE
 
     companion object {
         fun newInstance(habitId: String? = null): CreateHabitFragment {
@@ -39,6 +46,10 @@ class CreateHabitFragment : Fragment() {
             fragment.arguments = args
             return fragment
         }
+    }
+
+    private enum class LastAction {
+        NONE, SAVE, DELETE
     }
 
     override fun onAttach(context: Context) {
@@ -82,6 +93,32 @@ class CreateHabitFragment : Fragment() {
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             updateUI(state)
         }
+
+        viewModel.operationStatus.observe(viewLifecycleOwner) { status ->
+            when (status) {
+                HabitEditViewModel.OperationStatus.Success -> {
+                    Toast.makeText(context, "Операция выполнена успешно", Toast.LENGTH_SHORT).show()
+                    viewModel.resetOperationStatus()
+
+                    when (lastAction) {
+                        LastAction.SAVE -> fragmentListener?.onHabitSaved()
+                        LastAction.DELETE -> fragmentListener?.onHabitDeleted()
+                        LastAction.NONE -> Log.w("CreateHabitFragment", "Success status received but no action tracked")
+                    }
+                    lastAction = LastAction.NONE  // Сброс lastAction
+                }
+                is HabitEditViewModel.OperationStatus.Error -> {
+                    Toast.makeText(context, "Ошибка: ${status.message}", Toast.LENGTH_SHORT).show()
+                    viewModel.resetOperationStatus()
+                }
+                HabitEditViewModel.OperationStatus.InProgress -> {
+                    // можно сделать ProgressBar
+                }
+                null -> {
+                    // статус ещё не установлен или сброшен — ничего не делаем
+                }
+            }
+        }
     }
 
     // обновление UI при изменении состояния UiHabit
@@ -97,7 +134,8 @@ class CreateHabitFragment : Fragment() {
             colorPicker.setSelectedColor(state.selectedColor)
 
             // Показать/скрыть кнопку удаления в зависимости от того, редактируем ли мы существующую привычку
-            btnDeleteHabit.visibility = if (arguments?.getString(Constants.ARG_HABIT_ID) != null) View.VISIBLE else View.GONE
+            btnDeleteHabit.visibility =
+                if (arguments?.getString(Constants.ARG_HABIT_ID) != null) View.VISIBLE else View.GONE
         }
     }
 
@@ -139,29 +177,12 @@ class CreateHabitFragment : Fragment() {
 
             btnDeleteHabit.setOnClickListener { showDeleteConfirmationDialog() }
 
-            // при нажатии на кнопку (если saveHabit() вернул true) уведомляем fragmentListener
+            // при нажатии на кнопку запускаем сохранение в ViewModel и отмечаем действие как SAVE
             btnSaveHabit.setOnClickListener {
-                if (saveHabit()) {
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        fragmentListener?.onHabitSaved()
-                    }, 10000)
-                }
+                lastAction = LastAction.SAVE
+                viewModel.saveHabit()
             }
         }
-    }
-
-    private fun saveHabit(): Boolean {
-        val isSaved = viewModel.saveHabit()
-
-        if (!isSaved) {
-            with(binding) {
-                val state = viewModel.uiState.value ?: return false
-                if (state.title.isBlank()) etHabitTitle.error = getString(R.string.error_empty_title)
-                if (state.frequency.isBlank()) etHabitFrequency.error = getString(R.string.error_empty_frequency)
-                Log.d("SaveHabit", "Frequency value: ${state.frequency}")
-            }
-        }
-        return isSaved
     }
 
     private fun showDeleteConfirmationDialog() {
@@ -169,8 +190,8 @@ class CreateHabitFragment : Fragment() {
             .setTitle(getString(R.string.delete_habit_title))
             .setMessage(getString(R.string.delete_habit_message))
             .setPositiveButton(getString(R.string.delete)) { _, _ ->
+                lastAction = LastAction.DELETE
                 viewModel.deleteHabit()
-                fragmentListener?.onHabitDeleted()
             }
             .setNegativeButton(getString(R.string.cancel), null)
             .show()

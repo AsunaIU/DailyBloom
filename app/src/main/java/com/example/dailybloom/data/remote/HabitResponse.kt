@@ -16,7 +16,7 @@ data class HabitResponse (
     @SerialName("count") val count: Int = 0,
     @SerialName("date") val date: Long = System.currentTimeMillis(),
     @SerialName("color") val color: Int? = null,
-    @SerialName("doneDates") val doneDates: List<Long> = emptyList(),
+    @SerialName("done_dates") val doneDates: List<Long> = emptyList(),
 )
 
 @Serializable

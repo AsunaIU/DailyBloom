@@ -7,7 +7,10 @@ import com.example.dailybloom.model.Periodicity
 import com.example.dailybloom.model.Priority
 import java.util.UUID
 
+
 object HabitMappers {
+
+    /** Преобразует сетевую модель в доменную */
     fun HabitResponse.toDomainModel(): Habit {
         return Habit(
             id = this.uid ?: UUID.randomUUID().toString(),
@@ -22,13 +25,15 @@ object HabitMappers {
             frequency = this.frequency,
             periodicity = Periodicity.DAY, // Default as it's not in API model
             color = this.color ?: Color.BLUE,
-            createdAt = this.date
+            createdAt = this.date,
         )
     }
 
+    /** Получает uid из ответа */
     fun HabitResponse.toUid(): String =
         uid ?: throw IllegalStateException("Server did not return a uid")
 
+    /** Преобразует доменную модель в сетевую для отправки на сервер */
     fun Habit.toRequestModel(id: Boolean): HabitResponse {
         val uid = if (id) this.id else null
 
@@ -45,7 +50,7 @@ object HabitMappers {
             frequency = this.frequency,
             count = 1,
             date = this.createdAt,
-            color = this.color
+            color = this.color,
         )
     }
 }
