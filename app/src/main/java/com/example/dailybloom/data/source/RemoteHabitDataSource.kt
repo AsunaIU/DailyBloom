@@ -25,7 +25,7 @@ class RemoteHabitDataSource(private val habitApi: HabitApi) : HabitDataSource {
         return executeWithRetry {
             val request = habit.toRequestModel(id = false)
             val response = habitApi.addOrUpdateHabit(habit = request)
-            val newUid = response.uid ?: throw IllegalStateException("Server did not return a uid")
+            val newUid = response.uid
             habit.copy(id = newUid)
         }
     }
@@ -35,7 +35,7 @@ class RemoteHabitDataSource(private val habitApi: HabitApi) : HabitDataSource {
             val request = updatedHabit.toRequestModel(id = true)
             Log.d(TAG, "Sending habit to API: ${request.uid}")
             val response = habitApi.addOrUpdateHabit(habit = request)
-            val newUid = response.uid ?: throw IllegalStateException("Server did not return a uid")
+            val newUid = response.uid
             updatedHabit.copy(id = newUid)
         }
     }

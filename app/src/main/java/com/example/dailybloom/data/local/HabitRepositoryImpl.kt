@@ -55,7 +55,6 @@ class HabitRepositoryImpl(
 
     suspend fun addHabit(habit: Habit): Boolean {
         try {
-            Log.d("api", "sosat!!!!!!!")
             val remoteResult = remoteDataSource.addHabit(habit)
             Log.d("api", "remote add status ${remoteResult.isSuccess}")
             if (remoteResult.isSuccess) {

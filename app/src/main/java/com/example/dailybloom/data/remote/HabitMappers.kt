@@ -10,7 +10,7 @@ import java.util.UUID
 
 object HabitMappers {
 
-    /** Преобразует сетевую модель в доменную */
+    // Преобразует сетевую модель в доменную
     fun HabitResponse.toDomainModel(): Habit {
         return Habit(
             id = this.uid ?: UUID.randomUUID().toString(),
@@ -29,18 +29,18 @@ object HabitMappers {
         )
     }
 
-    /** Получает uid из ответа */
+    // Получает uid из ответа
     fun HabitResponse.toUid(): String =
         uid ?: throw IllegalStateException("Server did not return a uid")
 
-    /** Преобразует доменную модель в сетевую для отправки на сервер */
+    // Преобразует доменную модель в сетевую для отправки на сервер
     fun Habit.toRequestModel(id: Boolean): HabitResponse {
         val uid = if (id) this.id else null
 
         return HabitResponse(
             uid = uid,
             title = this.title,
-            description = this.description,
+            description = this.description.ifEmpty { "" },
             priority = when (this.priority) {
                 Priority.LOW -> 0
                 Priority.MEDIUM -> 1
