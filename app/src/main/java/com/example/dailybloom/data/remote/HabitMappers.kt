@@ -40,7 +40,7 @@ object HabitMappers {
         return HabitResponse(
             uid = uid,
             title = this.title,
-            description = this.description.ifEmpty { "" },
+            description = this.description.ifEmpty { " " },
             priority = when (this.priority) {
                 Priority.LOW -> 0
                 Priority.MEDIUM -> 1

@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.dailybloom.R
 import com.example.dailybloom.model.Habit
@@ -26,7 +27,10 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
 
     // ID редактируемой привычки, null - если создается новая привычка
     private val habitId: String? = handle.get<String>(Constants.ARG_HABIT_ID)
-    val habits: LiveData<Map<String, Habit>> = HabitRepository.habits
+
+    val habits: LiveData<Map<String, Habit>> =
+        HabitRepository.habits.asLiveData(viewModelScope.coroutineContext)
+
 
     init {
         loadHabitById()  // Попытаемся загрузить привычку по ID, если мы редактируем существующую привычку

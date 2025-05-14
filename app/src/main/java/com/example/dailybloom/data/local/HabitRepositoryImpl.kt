@@ -2,11 +2,14 @@ package com.example.dailybloom.data.local
 
 import android.util.Log
 import com.example.dailybloom.data.source.HabitDataSource
+import com.example.dailybloom.data.source.LocalHabitDataSource
 import com.example.dailybloom.model.Habit
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 
@@ -16,8 +19,9 @@ class HabitRepositoryImpl(
     private val appScope: CoroutineScope
 ) {
 
-    private val _habits = MutableStateFlow<Map<String, Habit>>(emptyMap())
-    val habits: StateFlow<Map<String, Habit>> = _habits.asStateFlow()
+    val habits: Flow<Map<String, Habit>> = (localDataSource as LocalHabitDataSource)
+        .getHabitsFlow()
+        .map { list -> list.associateBy { it.id } }
 
     init {
         Log.d("HabitRepositoryImpl", "Initializing repository")
@@ -38,14 +42,6 @@ class HabitRepositoryImpl(
             } else {
                 Log.d("HabitRepositoryImpl", "Failed to refresh habits from remote, trying locally")
             }
-
-            val localResult = localDataSource.getHabits()
-            if (localResult.isSuccess) {
-                val habitMap = localResult.getOrNull()?.associateBy { it.id } ?: emptyMap()
-                _habits.value = habitMap
-            } else {
-                throw Exception("Failed to fetch habit locally")
-            }
         } catch (ce: kotlinx.coroutines.CancellationException) {
             throw ce
         } catch (e: Exception) {
@@ -63,11 +59,6 @@ class HabitRepositoryImpl(
                 if (remoteHabit != null) {
                     localDataSource.addHabit(remoteHabit)
                     Log.d("api", "local successfull")
-
-                    val currentMap = _habits.value.toMutableMap()
-                    currentMap[remoteHabit.id] = remoteHabit
-                    _habits.value = currentMap
-
                 } else {
                     throw Exception("Failed to save to remote: server return null")
                 }
@@ -93,10 +84,6 @@ class HabitRepositoryImpl(
                 if (remoteUpdatedHabit != null) {
                     localDataSource.updateHabit(habitId, remoteUpdatedHabit)
 
-                    val currentMap = _habits.value.toMutableMap()
-                    currentMap[habitId] = remoteUpdatedHabit
-                    _habits.value = currentMap
-
                 } else {
                     throw Exception("Failed to save to remote: server return null")
                 }
@@ -119,9 +106,6 @@ class HabitRepositoryImpl(
             if (remoteResult.isSuccess) {
                 val localResult = localDataSource.deleteHabit(habitId)
                 if (localResult.isSuccess) {
-                    val currentMap = _habits.value.toMutableMap()
-                    currentMap.remove(habitId)
-                    _habits.value = currentMap
                     return true
                 } else {
                     throw Exception("Failed to delete habit locally")
@@ -137,7 +121,10 @@ class HabitRepositoryImpl(
         }
     }
 
-    fun getHabits(): Map<String, Habit> = _habits.value
+    suspend fun getHabits(): Map<String, Habit> {
+        val result = localDataSource.getHabits()
+        return result.getOrNull()?.associateBy { it.id } ?: emptyMap()
+    }
 
     fun syncWithServer() {
         appScope.launch {

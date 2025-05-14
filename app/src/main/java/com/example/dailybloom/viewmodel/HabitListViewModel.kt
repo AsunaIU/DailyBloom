@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import com.example.dailybloom.model.Habit
 import com.example.dailybloom.data.local.HabitRepository
 import com.example.dailybloom.viewmodel.viewmodeldata.FilterCriteria
@@ -12,7 +14,8 @@ import com.example.dailybloom.viewmodel.viewmodeldata.SortOption
 
 class HabitListViewModel : ViewModel() {
 
-    private val repositoryHabits: LiveData<Map<String, Habit>> = HabitRepository.habits
+    private val repositoryHabits: LiveData<Map<String, Habit>> =
+        HabitRepository.habits.asLiveData(viewModelScope.coroutineContext)
 
     private val _filterCriteria = MutableLiveData(FilterCriteria())
     val filterCriteria: LiveData<FilterCriteria> = _filterCriteria
