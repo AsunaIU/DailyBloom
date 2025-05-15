@@ -18,7 +18,8 @@ data class HabitEntity(
     val frequency: Int,
     val periodicityName: String,
     val color: Int,
-    val createdAt: Long
+    val createdAt: Long,
+    val done: Boolean,
 ) {
 
     companion object {
@@ -32,7 +33,8 @@ data class HabitEntity(
                 frequency = habit.frequency,
                 periodicityName = habit.periodicity.name,
                 color = habit.color,
-                createdAt = habit.createdAt
+                createdAt = habit.createdAt,
+                done = habit.done
             )
         }
         fun toHabit(entity: HabitEntity): Habit {
@@ -45,7 +47,8 @@ data class HabitEntity(
                 frequency = entity.frequency,
                 periodicity = Periodicity.fromString(entity.periodicityName),
                 color = entity.color,
-                createdAt = entity.createdAt
+                createdAt = entity.createdAt,
+                done = entity.done
             )
         }
     }

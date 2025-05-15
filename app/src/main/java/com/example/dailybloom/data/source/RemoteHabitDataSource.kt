@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.dailybloom.data.remote.HabitMappers.toDomainModel
 import com.example.dailybloom.data.remote.HabitMappers.toRequestModel
 import com.example.dailybloom.data.remote.HabitApi
+import com.example.dailybloom.data.remote.HabitDoneRequest
 import com.example.dailybloom.data.remote.UidResponse
 import com.example.dailybloom.model.Habit
 import kotlinx.coroutines.CancellationException
@@ -40,10 +41,19 @@ class RemoteHabitDataSource(private val habitApi: HabitApi) : HabitDataSource {
         }
     }
 
-
     override suspend fun deleteHabit(habitId: String): Result<Unit> {
         return executeWithRetry {
             habitApi.deleteHabit(uid = UidResponse(habitId))
+        }
+    }
+
+    override suspend fun setHabitDone(habitId: String, date: Long): Result<Unit> {
+        return executeWithRetry {
+            Log.d(TAG, "Setting habit as done: $habitId, date: $date")
+            val request = HabitDoneRequest(uid = habitId, date = date)
+            val response = habitApi.setHabitDone(habitDone = request)
+            Log.d(TAG, "Habit marked as done, response: ${response.uid}")
+            Unit
         }
     }
 
@@ -62,9 +72,8 @@ class RemoteHabitDataSource(private val habitApi: HabitApi) : HabitDataSource {
             try {
                 return Result.success(withTimeout(timeoutMillis) { block() })
             } catch (e: CancellationException) {
-                // Re-throw CancellationException to properly cancel coroutine
                 Log.e(TAG, "Operation canceled (not retrying, propagating cancellation)", e)
-                throw e  // Don't wrap in Result.failure, allow cancellation to propagate
+                throw e
             } catch (e: Exception) {
                 lastException = e
                 Log.e(TAG, "API call failed (attempt ${attempt+1}/$maxRetries): ${e.message}", e)

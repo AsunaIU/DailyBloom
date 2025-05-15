@@ -5,6 +5,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.HTTP
 import retrofit2.http.Header
+import retrofit2.http.POST
 import retrofit2.http.PUT
 
 interface HabitApi {
@@ -24,4 +25,9 @@ interface HabitApi {
         @Header("Authorization") token: String = BuildConfig.API_TOKEN,
         @Body uid: UidResponse
     )
+    @POST("habit_done")
+    suspend fun setHabitDone(
+        @Header("Authorization") token: String = BuildConfig.API_TOKEN,
+        @Body habitDone: HabitDoneRequest
+    ): UidResponse
 }

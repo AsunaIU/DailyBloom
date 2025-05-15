@@ -23,9 +23,10 @@ object HabitMappers {
             },
             type = if (this.type == 0) HabitType.GOOD else HabitType.BAD,
             frequency = this.frequency,
-            periodicity = Periodicity.DAY, // Default as it's not in API model
+            periodicity = Periodicity.DAY, // по умолчанию, так как его нет в модели API
             color = this.color ?: Color.BLUE,
             createdAt = this.date,
+            done = this.doneDates.isNotEmpty(),  // будет отмечено как выполненное, если в списке doneDates есть какие-либо даты
         )
     }
 
@@ -51,6 +52,7 @@ object HabitMappers {
             count = 1,
             date = this.createdAt,
             color = this.color,
+            doneDates = emptyList(), // пустые,т.к. управляются сервером
         )
     }
 }

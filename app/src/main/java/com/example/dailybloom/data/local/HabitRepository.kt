@@ -35,6 +35,10 @@ object HabitRepository {
         return implementation.removeHabit(habitId)
     }
 
+    suspend fun setHabitDone(habitId: String): Boolean {
+        return implementation.setHabitDone(habitId)
+    }
+
     suspend fun getHabits(): Map<String, Habit> = implementation.getHabits()
 
     fun syncWithServer() {

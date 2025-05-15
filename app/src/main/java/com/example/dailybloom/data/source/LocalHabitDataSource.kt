@@ -38,14 +38,15 @@ class LocalHabitDataSource(private val habitDao: HabitDao) : HabitDataSource {
         }
     }
 
-    override suspend fun updateHabit(habitId: String, updatedHabit: Habit): Result<Habit> = withContext(Dispatchers.IO) {
-        try {
-            habitDao.insertHabit(HabitEntity.fromHabit(updatedHabit))
-            Result.success(updatedHabit)
-        } catch (e: Exception) {
-            Result.failure(e)
+    override suspend fun updateHabit(habitId: String, updatedHabit: Habit): Result<Habit> =
+        withContext(Dispatchers.IO) {
+            try {
+                habitDao.insertHabit(HabitEntity.fromHabit(updatedHabit))
+                Result.success(updatedHabit)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
         }
-    }
 
     override suspend fun deleteHabit(habitId: String): Result<Unit> = withContext(Dispatchers.IO) {
         try {
@@ -55,4 +56,23 @@ class LocalHabitDataSource(private val habitDao: HabitDao) : HabitDataSource {
             Result.failure(e)
         }
     }
+
+    override suspend fun setHabitDone(habitId: String, date: Long): Result<Unit> = withContext(Dispatchers.IO) {
+            try {
+                val habitFlow = habitDao.getHabitById(habitId)
+                val habitEntity = habitFlow.firstOrNull()
+
+                if (habitEntity != null) {
+                    val habit = HabitEntity.toHabit(habitEntity)
+                    val updatedHabit = habit.copy(done = true)
+                    habitDao.insertHabit(HabitEntity.fromHabit(updatedHabit))
+                    Result.success(Unit)
+                } else {
+                    Result.failure(Exception("Habit not found"))
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
 }
+

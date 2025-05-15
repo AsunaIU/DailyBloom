@@ -7,4 +7,5 @@ interface HabitDataSource {
     suspend fun addHabit(habit: Habit): Result<Habit>
     suspend fun updateHabit(habitId: String, updatedHabit: Habit): Result<Habit>
     suspend fun deleteHabit(habitId: String): Result<Unit>
+    suspend fun setHabitDone(habitId: String, date: Long = System.currentTimeMillis()): Result<Unit>
 }

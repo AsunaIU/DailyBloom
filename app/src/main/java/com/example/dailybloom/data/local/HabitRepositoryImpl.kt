@@ -6,9 +6,6 @@ import com.example.dailybloom.data.source.LocalHabitDataSource
 import com.example.dailybloom.model.Habit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -117,6 +114,32 @@ class HabitRepositoryImpl(
             throw ce
         } catch (e: Exception) {
             Log.e("HabitRepositoryImpl", "Exception while deleting habit: ${e.message}", e)
+            return false
+        }
+    }
+
+    suspend fun setHabitDone(habitId: String): Boolean {
+        try {
+            val currentDate = System.currentTimeMillis()
+            val remoteResult = remoteDataSource.setHabitDone(habitId, currentDate)
+
+            if (remoteResult.isSuccess) {
+                Log.d("HabitRepositoryImpl", "Remote set habit done successful for habit: $habitId")
+                val localResult = localDataSource.setHabitDone(habitId, currentDate)
+
+                if (localResult.isSuccess) {
+                    Log.d("HabitRepositoryImpl", "Local set habit done successful for habit: $habitId")
+                    return true
+                } else {
+                    throw Exception("Failed to mark habit as done locally")
+                }
+            } else {
+                throw Exception("Failed to mark habit as done on remote")
+            }
+        } catch (ce: kotlinx.coroutines.CancellationException) {
+            throw ce
+        } catch (e: Exception) {
+            Log.e("HabitRepositoryImpl", "Exception while marking habit as done: ${e.message}", e)
             return false
         }
     }

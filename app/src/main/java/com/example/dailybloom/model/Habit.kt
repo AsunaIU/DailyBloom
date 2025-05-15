@@ -17,6 +17,8 @@ data class Habit(
     var periodicity: Periodicity,
     var color: Int,
     val createdAt: Long = System.currentTimeMillis(),
+    var done: Boolean = false,
+
 ) : Parcelable {
 
     companion object {
@@ -28,7 +30,8 @@ data class Habit(
                 typeId = if (habit.type == HabitType.GOOD) R.id.rbHabitGood else R.id.rbHabitBad,
                 frequency = habit.frequency.toString(),
                 periodicityPos = habit.periodicity.ordinal,
-                selectedColor = habit.color
+                selectedColor = habit.color,
+                done = habit.done
             )
         }
     }

@@ -50,8 +50,10 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
 
                     habitId.let { id ->
                         habitsMap[id]?.let { updatedHabit ->
-                            if (_uiState.value != Habit.toUiHabit(updatedHabit)) {
-                                _uiState.value = Habit.toUiHabit(updatedHabit)
+                            val newUiState = Habit.toUiHabit(updatedHabit)
+
+                            if (_uiState.value != newUiState) {
+                                _uiState.value = newUiState
                             }
                         }
                     }
@@ -68,13 +70,18 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
         _uiState.value = _uiState.value?.copy(selectedColor = color)
     }
 
+    fun updateDoneStatus(done: Boolean) {
+        _uiState.value = _uiState.value?.copy(done = done)
+    }
+
     fun updateUIState(
         title: String? = null,
         description: String? = null,
         priorityPos: Int? = null,
         typeId: Int? = null,
         frequency: String? = null,
-        periodicityPos: Int? = null
+        periodicityPos: Int? = null,
+        done: Boolean? = null,
     ) {
         val current = _uiState.value ?: UiHabit()
         // current не null – либо используется текущее состояние, либо создаётся новое с дефолтными значениями
@@ -85,7 +92,8 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
             priorityPos = priorityPos ?: current.priorityPos,
             typeId = typeId ?: current.typeId,
             frequency = frequency ?: current.frequency,
-            periodicityPos = periodicityPos ?: current.periodicityPos
+            periodicityPos = periodicityPos ?: current.periodicityPos,
+            done = done ?: current.done,
         )
     }
 
@@ -120,7 +128,8 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
             type = type,
             frequency = frequency,
             periodicity = periodicity,
-            color = state.selectedColor
+            color = state.selectedColor,
+            done = state.done
         )
 
         viewModelScope.launch {
@@ -151,6 +160,25 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
             _operationStatus.value =
                 if (result) OperationStatus.Success
                 else OperationStatus.Error("Failed to delete habit")
+        }
+    }
+
+    fun setHabitDone() {
+        if (habitId == null) {
+            _operationStatus.value = OperationStatus.Error("Cannot mark a habit as done that hasn't been saved")
+            return
+        }
+
+        _operationStatus.value = OperationStatus.InProgress
+
+        viewModelScope.launch {
+            updateDoneStatus(true)
+
+            val result = HabitRepository.setHabitDone(habitId)
+
+            _operationStatus.value =
+                if (result) OperationStatus.Success
+                else OperationStatus.Error("Failed to mark habit as done")
         }
     }
 

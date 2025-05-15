@@ -15,5 +15,6 @@ data class UiHabit(
     val typeId: Int = R.id.rbHabitGood,
     val frequency: String = "1",
     val periodicityPos: Int = Periodicity.DAY.ordinal,
-    val selectedColor: Int = Color.WHITE
+    val selectedColor: Int = Color.WHITE,
+    val done: Boolean = false
 ) : Parcelable

@@ -55,7 +55,10 @@ class HabitListFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        adapter = HabitAdapter { habit -> openEditScreen(habit) }
+        adapter = HabitAdapter(
+            onClick = { habit -> openEditScreen(habit) },
+            viewModel = viewModel
+        )
         binding.habitRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@HabitListFragment.adapter
@@ -98,5 +101,3 @@ class HabitListFragment : Fragment() {
         }
     }
 }
-
-
