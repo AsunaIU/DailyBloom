@@ -3,7 +3,7 @@ package com.example.dailybloom
 import android.app.Application
 import android.util.Log
 import com.example.dailybloom.data.local.HabitDatabase
-import com.example.dailybloom.data.local.HabitRepository
+import com.example.dailybloom.domain.repository.HabitRepository
 import com.example.dailybloom.data.local.HabitRepositoryImpl
 import com.example.dailybloom.data.remote.HabitApi
 import com.example.dailybloom.data.source.LocalHabitDataSource
@@ -52,10 +52,10 @@ class DailyBloomApplication : Application() {
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
 
-        val habitApi: HabitApi = retrofit.create(HabitApi::class.java)
+        val habitApi: com.example.dailybloom.data.remote.HabitApi = retrofit.create(com.example.dailybloom.data.remote.HabitApi::class.java)
         Log.d("DailyBloomApplication", "HabitApi created")
 
-        val database = HabitDatabase.getDatabase(this)
+        val database = com.example.dailybloom.data.local.HabitDatabase.getDatabase(this)
         Log.d("DailyBloomApplication", "Database initialized")
 
         val localDataSource = LocalHabitDataSource(database.habitDao())
@@ -69,7 +69,7 @@ class DailyBloomApplication : Application() {
         )
         Log.d("DailyBloomApplication", "RepositoryImpl created")
 
-        HabitRepository.initialize(repositoryImpl)
+        com.example.dailybloom.domain.repository.HabitRepository.initialize(repositoryImpl)
         Log.d("DailyBloomApplication", "Repository initialized")
     }
 }
