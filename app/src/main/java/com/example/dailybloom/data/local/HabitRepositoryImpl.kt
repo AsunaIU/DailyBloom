@@ -3,7 +3,7 @@ package com.example.dailybloom.data.local
 import android.util.Log
 import com.example.dailybloom.data.source.HabitDataSource
 import com.example.dailybloom.data.source.LocalHabitDataSource
-import com.example.dailybloom.model.Habit
+import com.example.dailybloom.domain.model.Habit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -16,7 +16,7 @@ class HabitRepositoryImpl(
     private val appScope: CoroutineScope
 ) {
 
-    val habits: Flow<Map<String, Habit>> = (localDataSource as LocalHabitDataSource)
+    val habits: Flow<Map<String, com.example.dailybloom.domain.model.Habit>> = (localDataSource as LocalHabitDataSource)
         .getHabitsFlow()
         .map { list -> list.associateBy { it.id } }
 
@@ -46,7 +46,7 @@ class HabitRepositoryImpl(
         }
     }
 
-    suspend fun addHabit(habit: Habit): Boolean {
+    suspend fun addHabit(habit: com.example.dailybloom.domain.model.Habit): Boolean {
         try {
             val remoteResult = remoteDataSource.addHabit(habit)
             Log.d("api", "remote add status ${remoteResult.isSuccess}")
@@ -73,7 +73,7 @@ class HabitRepositoryImpl(
     }
 
 
-    suspend fun updateHabit(habitId: String, updatedHabit: Habit): Boolean {
+    suspend fun updateHabit(habitId: String, updatedHabit: com.example.dailybloom.domain.model.Habit): Boolean {
         try {
             val remoteResult = remoteDataSource.updateHabit(habitId, updatedHabit)
             if (remoteResult.isSuccess) {
@@ -144,7 +144,7 @@ class HabitRepositoryImpl(
         }
     }
 
-    suspend fun getHabits(): Map<String, Habit> {
+    suspend fun getHabits(): Map<String, com.example.dailybloom.domain.model.Habit> {
         val result = localDataSource.getHabits()
         return result.getOrNull()?.associateBy { it.id } ?: emptyMap()
     }

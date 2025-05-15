@@ -1,6 +1,6 @@
 package com.example.dailybloom.data.source
 
-import com.example.dailybloom.model.Habit
+import com.example.dailybloom.domain.model.Habit
 import com.example.dailybloom.data.local.HabitDao
 import com.example.dailybloom.data.local.HabitEntity
 import kotlinx.coroutines.Dispatchers
@@ -9,19 +9,19 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
-class LocalHabitDataSource(private val habitDao: HabitDao) : HabitDataSource {
+class LocalHabitDataSource(private val habitDao: com.example.dailybloom.data.local.HabitDao) : HabitDataSource {
 
     // Получение привычек в виде Flow из Room
-    fun getHabitsFlow(): Flow<List<Habit>> {
+    fun getHabitsFlow(): Flow<List<com.example.dailybloom.domain.model.Habit>> {
         return habitDao.getAllHabits().map { entities ->
-            entities.map { HabitEntity.toHabit(it) }
+            entities.map { com.example.dailybloom.data.local.HabitEntity.toHabit(it) }
         }
     }
 
-    override suspend fun getHabits(): Result<List<Habit>> = withContext(Dispatchers.IO) {
+    override suspend fun getHabits(): Result<List<com.example.dailybloom.domain.model.Habit>> = withContext(Dispatchers.IO) {
         try {
             val habits = habitDao.getAllHabits().map { entities ->
-                entities.map { HabitEntity.toHabit(it) }
+                entities.map { com.example.dailybloom.data.local.HabitEntity.toHabit(it) }
             }.firstOrNull() ?: emptyList()
             Result.success(habits)
         } catch (e: Exception) {
@@ -29,19 +29,19 @@ class LocalHabitDataSource(private val habitDao: HabitDao) : HabitDataSource {
         }
     }
 
-    override suspend fun addHabit(habit: Habit): Result<Habit> = withContext(Dispatchers.IO) {
+    override suspend fun addHabit(habit: com.example.dailybloom.domain.model.Habit): Result<com.example.dailybloom.domain.model.Habit> = withContext(Dispatchers.IO) {
         try {
-            habitDao.insertHabit(HabitEntity.fromHabit(habit))
+            habitDao.insertHabit(com.example.dailybloom.data.local.HabitEntity.fromHabit(habit))
             Result.success(habit)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    override suspend fun updateHabit(habitId: String, updatedHabit: Habit): Result<Habit> =
+    override suspend fun updateHabit(habitId: String, updatedHabit: com.example.dailybloom.domain.model.Habit): Result<com.example.dailybloom.domain.model.Habit> =
         withContext(Dispatchers.IO) {
             try {
-                habitDao.insertHabit(HabitEntity.fromHabit(updatedHabit))
+                habitDao.insertHabit(com.example.dailybloom.data.local.HabitEntity.fromHabit(updatedHabit))
                 Result.success(updatedHabit)
             } catch (e: Exception) {
                 Result.failure(e)
@@ -63,9 +63,9 @@ class LocalHabitDataSource(private val habitDao: HabitDao) : HabitDataSource {
                 val habitEntity = habitFlow.firstOrNull()
 
                 if (habitEntity != null) {
-                    val habit = HabitEntity.toHabit(habitEntity)
+                    val habit = com.example.dailybloom.data.local.HabitEntity.toHabit(habitEntity)
                     val updatedHabit = habit.copy(done = true)
-                    habitDao.insertHabit(HabitEntity.fromHabit(updatedHabit))
+                    habitDao.insertHabit(com.example.dailybloom.data.local.HabitEntity.fromHabit(updatedHabit))
                     Result.success(Unit)
                 } else {
                     Result.failure(Exception("Habit not found"))

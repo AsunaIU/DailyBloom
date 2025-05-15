@@ -1,10 +1,10 @@
 package com.example.dailybloom.data.remote
 
 import android.graphics.Color
-import com.example.dailybloom.model.Habit
-import com.example.dailybloom.model.HabitType
-import com.example.dailybloom.model.Periodicity
-import com.example.dailybloom.model.Priority
+import com.example.dailybloom.domain.model.Habit
+import com.example.dailybloom.domain.model.HabitType
+import com.example.dailybloom.domain.model.Periodicity
+import com.example.dailybloom.domain.model.Priority
 import java.util.UUID
 
 

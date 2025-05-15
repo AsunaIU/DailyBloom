@@ -7,8 +7,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.dailybloom.model.Habit
-import com.example.dailybloom.data.local.HabitRepository
+import com.example.dailybloom.domain.model.Habit
+import com.example.dailybloom.domain.repository.HabitRepository
 import com.example.dailybloom.viewmodel.viewmodeldata.FilterCriteria
 import com.example.dailybloom.viewmodel.viewmodeldata.SortOption
 import kotlinx.coroutines.launch
@@ -18,8 +18,8 @@ class HabitListViewModel : ViewModel() {
 
     private val TAG = HabitListViewModel::class.java.simpleName
 
-    private val repositoryHabits: LiveData<Map<String, Habit>> =
-        HabitRepository.habits.asLiveData(viewModelScope.coroutineContext)
+    private val repositoryHabits: LiveData<Map<String, com.example.dailybloom.domain.model.Habit>> =
+        com.example.dailybloom.domain.repository.HabitRepository.habits.asLiveData(viewModelScope.coroutineContext)
 
     private val _filterCriteria = MutableLiveData(FilterCriteria())
     val filterCriteria: LiveData<FilterCriteria> = _filterCriteria
@@ -27,7 +27,7 @@ class HabitListViewModel : ViewModel() {
     private val _operationStatus = MutableLiveData<OperationStatus?>()
     val operationStatus: LiveData<OperationStatus?> = _operationStatus
 
-    private val _filteredHabits = MediatorLiveData<List<Habit>>().apply {
+    private val _filteredHabits = MediatorLiveData<List<com.example.dailybloom.domain.model.Habit>>().apply {
         addSource(repositoryHabits) { habits ->
             Log.d(TAG, "repositoryHabits changed: ${habits.size} items")
             value = applyFilters(habits.values.toList(), _filterCriteria.value ?: FilterCriteria())
@@ -40,7 +40,7 @@ class HabitListViewModel : ViewModel() {
         }
     }
 
-    val filteredHabits: LiveData<List<Habit>> = _filteredHabits
+    val filteredHabits: LiveData<List<com.example.dailybloom.domain.model.Habit>> = _filteredHabits
 
 
     fun toggleSortDirection() {
@@ -65,7 +65,7 @@ class HabitListViewModel : ViewModel() {
                 if (currentHabit != null) {
                     val updatedHabit = currentHabit.copy(done = !currentHabit.done)
 
-                    val result = HabitRepository.updateHabit(habitId, updatedHabit)
+                    val result = com.example.dailybloom.domain.repository.HabitRepository.updateHabit(habitId, updatedHabit)
 
                     _operationStatus.value = if (result) {
                         OperationStatus.Success
@@ -91,7 +91,7 @@ class HabitListViewModel : ViewModel() {
     }
 
     // Основной метод фильтрации
-    private fun applyFilters(habits: List<Habit>, criteria: FilterCriteria): List<Habit> {
+    private fun applyFilters(habits: List<com.example.dailybloom.domain.model.Habit>, criteria: FilterCriteria): List<com.example.dailybloom.domain.model.Habit> {
         var filteredHabits = habits
 
         if (criteria.searchQuery.isNotBlank()) {

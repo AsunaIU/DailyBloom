@@ -8,11 +8,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.dailybloom.R
-import com.example.dailybloom.model.Habit
-import com.example.dailybloom.data.local.HabitRepository
-import com.example.dailybloom.model.HabitType
-import com.example.dailybloom.model.Periodicity
-import com.example.dailybloom.model.Priority
+import com.example.dailybloom.domain.model.Habit
+import com.example.dailybloom.domain.repository.HabitRepository
+import com.example.dailybloom.domain.model.HabitType
+import com.example.dailybloom.domain.model.Periodicity
+import com.example.dailybloom.domain.model.Priority
 import com.example.dailybloom.util.Constants
 import com.example.dailybloom.viewmodel.viewmodeldata.UiHabit
 import kotlinx.coroutines.launch
@@ -28,8 +28,8 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
     // ID редактируемой привычки, null - если создается новая привычка
     private val habitId: String? = handle.get<String>(Constants.ARG_HABIT_ID)
 
-    val habits: LiveData<Map<String, Habit>> =
-        HabitRepository.habits.asLiveData(viewModelScope.coroutineContext)
+    val habits: LiveData<Map<String, com.example.dailybloom.domain.model.Habit>> =
+        com.example.dailybloom.domain.repository.HabitRepository.habits.asLiveData(viewModelScope.coroutineContext)
 
 
     init {
@@ -40,7 +40,7 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
     private fun loadHabitById() {
         habitId?.let { id ->
             habits.value?.get(id)?.let { habit ->
-                _uiState.value = Habit.toUiHabit(habit)
+                _uiState.value = com.example.dailybloom.domain.model.Habit.toUiHabit(habit)
             }
         }
 
@@ -50,7 +50,7 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
 
                     habitId.let { id ->
                         habitsMap[id]?.let { updatedHabit ->
-                            val newUiState = Habit.toUiHabit(updatedHabit)
+                            val newUiState = com.example.dailybloom.domain.model.Habit.toUiHabit(updatedHabit)
 
                             if (_uiState.value != newUiState) {
                                 _uiState.value = newUiState
@@ -115,28 +115,29 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
             return
         }
 
-        val priority = Priority.entries[state.priorityPos]
-        val type = if (state.typeId == R.id.rbHabitGood) HabitType.GOOD else HabitType.BAD
-        val periodicity = Periodicity.entries[state.periodicityPos]
+        val priority = com.example.dailybloom.domain.model.Priority.entries[state.priorityPos]
+        val type = if (state.typeId == R.id.rbHabitGood) com.example.dailybloom.domain.model.HabitType.GOOD else com.example.dailybloom.domain.model.HabitType.BAD
+        val periodicity = com.example.dailybloom.domain.model.Periodicity.entries[state.periodicityPos]
         val frequency = state.frequency.toIntOrNull() ?: 1
 
-        val habit = Habit( // обновляется привычка с указанным id
-            id = habitId ?: "",
-            title = state.title,
-            description = state.description,
-            priority = priority,
-            type = type,
-            frequency = frequency,
-            periodicity = periodicity,
-            color = state.selectedColor,
-            done = state.done
-        )
+        val habit =
+            com.example.dailybloom.domain.model.Habit( // обновляется привычка с указанным id
+                id = habitId ?: "",
+                title = state.title,
+                description = state.description,
+                priority = priority,
+                type = type,
+                frequency = frequency,
+                periodicity = periodicity,
+                color = state.selectedColor,
+                done = state.done
+            )
 
         viewModelScope.launch {
             val result = if (habitId == null) {
-                HabitRepository.addHabit(habit)
+                com.example.dailybloom.domain.repository.HabitRepository.addHabit(habit)
             } else {
-                HabitRepository.updateHabit(habitId, habit)
+                com.example.dailybloom.domain.repository.HabitRepository.updateHabit(habitId, habit)
             }
             Log.d("ViewModel", "$result")
 
@@ -155,7 +156,7 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
         _operationStatus.value = OperationStatus.InProgress
 
         viewModelScope.launch {
-            val result = HabitRepository.removeHabit(habitId)
+            val result = com.example.dailybloom.domain.repository.HabitRepository.removeHabit(habitId)
 
             _operationStatus.value =
                 if (result) OperationStatus.Success
@@ -174,7 +175,7 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
         viewModelScope.launch {
             updateDoneStatus(true)
 
-            val result = HabitRepository.setHabitDone(habitId)
+            val result = com.example.dailybloom.domain.repository.HabitRepository.setHabitDone(habitId)
 
             _operationStatus.value =
                 if (result) OperationStatus.Success

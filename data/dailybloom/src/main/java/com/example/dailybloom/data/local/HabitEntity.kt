@@ -2,11 +2,10 @@ package com.example.dailybloom.data.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverter
-import com.example.dailybloom.model.Habit
-import com.example.dailybloom.model.HabitType
-import com.example.dailybloom.model.Periodicity
-import com.example.dailybloom.model.Priority
+import com.example.dailybloom.domain.model.Habit
+import com.example.dailybloom.domain.model.HabitType
+import com.example.dailybloom.domain.model.Periodicity
+import com.example.dailybloom.domain.model.Priority
 
 @Entity(tableName = "habits")
 data class HabitEntity(

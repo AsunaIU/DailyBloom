@@ -134,7 +134,6 @@ class HabitAdapter(
                 Log.d(TAG, "Action button clicked for habit id=${habit.id}, done=${habit.done}")
 
                 if (!habit.done) {
-                    // Use the viewModel to update the habit status
                     viewModel.setHabitDone(habit.id)
 
                     if (habit.type == HabitType.GOOD) {
@@ -151,8 +150,7 @@ class HabitAdapter(
                         ).show()
                     }
                 } else {
-                    // For already done habits, use the same viewModel logic
-                    // We'll toggle its done status by updating it
+
                     viewModel.setHabitDone(habit.id)
 
                     if (habit.type == HabitType.GOOD) {

@@ -9,8 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dailybloom.databinding.FragmentHabitsListBinding
-import com.example.dailybloom.model.Habit
-import com.example.dailybloom.model.HabitType
+import com.example.dailybloom.domain.model.Habit
+import com.example.dailybloom.domain.model.HabitType
 import com.example.dailybloom.util.Constants
 import com.example.dailybloom.view.adapter.HabitAdapter
 import com.example.dailybloom.viewmodel.HabitListViewModel
@@ -22,7 +22,7 @@ class HabitListFragment : Fragment() {
     private var _binding: FragmentHabitsListBinding? = null
     private val binding get() = _binding!!
 
-    private var habitType: HabitType = HabitType.GOOD
+    private var habitType: com.example.dailybloom.domain.model.HabitType = com.example.dailybloom.domain.model.HabitType.GOOD
 
     private lateinit var adapter: HabitAdapter
     private var fragmentListener: HabitViewPagerFragment.HabitFragmentListener? = null
@@ -41,7 +41,7 @@ class HabitListFragment : Fragment() {
     ): View {
         _binding = FragmentHabitsListBinding.inflate(inflater, container, false)
         arguments?.getString(Constants.ARG_HABIT_TYPE)?.let {
-            habitType = HabitType.fromString(it)
+            habitType = com.example.dailybloom.domain.model.HabitType.fromString(it)
         }
         return binding.root
     }
@@ -75,7 +75,7 @@ class HabitListFragment : Fragment() {
         filterBottomSheet.show(parentFragmentManager, HabitFilterFragment.TAG)
     }
 
-    private fun openEditScreen(habit: Habit) {
+    private fun openEditScreen(habit: com.example.dailybloom.domain.model.Habit) {
         fragmentListener?.onEditHabit(habit)
     }
 

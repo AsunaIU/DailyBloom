@@ -1,4 +1,4 @@
-package com.example.dailybloom.model
+package com.example.dailybloom.domain.model
 
 enum class Periodicity {
     DAY, WEEK, MONTH;

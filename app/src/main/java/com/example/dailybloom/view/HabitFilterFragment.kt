@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.activityViewModels
 import com.example.dailybloom.databinding.FragmentHabitFilterBinding
-import com.example.dailybloom.model.Priority
+import com.example.dailybloom.domain.model.Priority
 import com.example.dailybloom.viewmodel.viewmodeldata.FilterCriteria
 import com.example.dailybloom.viewmodel.HabitListViewModel
 import com.example.dailybloom.viewmodel.viewmodeldata.SortOption
@@ -91,12 +91,12 @@ class HabitFilterFragment : BottomSheetDialogFragment()  {
         }
     }
     private fun updateLocalPriorityFilters() {
-        val selectedPriorities = mutableSetOf<Priority>()
+        val selectedPriorities = mutableSetOf<com.example.dailybloom.domain.model.Priority>()
 
         with(binding) {
-            if (chipHigh.isChecked) selectedPriorities.add(Priority.HIGH)
-            if (chipMedium.isChecked) selectedPriorities.add(Priority.MEDIUM)
-            if (chipLow.isChecked) selectedPriorities.add(Priority.LOW)
+            if (chipHigh.isChecked) selectedPriorities.add(com.example.dailybloom.domain.model.Priority.HIGH)
+            if (chipMedium.isChecked) selectedPriorities.add(com.example.dailybloom.domain.model.Priority.MEDIUM)
+            if (chipLow.isChecked) selectedPriorities.add(com.example.dailybloom.domain.model.Priority.LOW)
         }
 
         localCriteria = localCriteria.copy (priorityFilters = selectedPriorities)
@@ -118,9 +118,9 @@ class HabitFilterFragment : BottomSheetDialogFragment()  {
                 SortOption.ALPHABETICALLY -> chipAlphabetically.isChecked = true
             }
 
-            chipHigh.isChecked = Priority.HIGH in criteria.priorityFilters
-            chipMedium.isChecked = Priority.MEDIUM in criteria.priorityFilters
-            chipLow.isChecked = Priority.LOW in criteria.priorityFilters
+            chipHigh.isChecked = com.example.dailybloom.domain.model.Priority.HIGH in criteria.priorityFilters
+            chipMedium.isChecked = com.example.dailybloom.domain.model.Priority.MEDIUM in criteria.priorityFilters
+            chipLow.isChecked = com.example.dailybloom.domain.model.Priority.LOW in criteria.priorityFilters
         }
     }
 
