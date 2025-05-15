@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.hilt)
     alias(libs.plugins.secretsPlugin)
 }
 
@@ -46,6 +47,9 @@ android {
 }
 
 dependencies {
+    implementation(project(":presentation"))
+    implementation(project(":data"))
+    implementation(project(":domain"))
 
     // Core AndroidX
     implementation(libs.androidx.core.ktx)
@@ -96,6 +100,11 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
+    // Dagger-Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+
+    // Glide for navbar image
     implementation(libs.glide)
     ksp(libs.glide.ksp)
 }
