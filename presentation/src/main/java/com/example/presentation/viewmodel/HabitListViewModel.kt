@@ -1,8 +1,6 @@
 package com.example.presentation.viewmodel
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.model.Habit
@@ -12,8 +10,11 @@ import com.example.presentation.viewmodel.viewmodeldata.FilterCriteria
 import com.example.presentation.viewmodel.viewmodeldata.SortOption
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,27 +26,31 @@ class HabitListViewModel @Inject constructor(
 
     private val TAG = HabitListViewModel::class.java.simpleName
 
-    // Теперь используем Flow вместо LiveData
+    // Original Flow from repository
     private val _habits = MutableStateFlow<Map<String, Habit>>(emptyMap())
     val habits: StateFlow<Map<String, Habit>> = _habits.asStateFlow()
 
-    private val _filterCriteria = MutableLiveData(FilterCriteria())
-    val filterCriteria: LiveData<FilterCriteria> = _filterCriteria
+    // StateFlow for filter criteria (was LiveData)
+    private val _filterCriteria = MutableStateFlow(FilterCriteria())
+    val filterCriteria: StateFlow<FilterCriteria> = _filterCriteria.asStateFlow()
 
-    private val _operationStatus = MutableLiveData<OperationStatus?>()
-    val operationStatus: LiveData<OperationStatus?> = _operationStatus
+    // StateFlow for operation status (was LiveData)
+    private val _operationStatus = MutableStateFlow<OperationStatus?>(null)
+    val operationStatus: StateFlow<OperationStatus?> = _operationStatus.asStateFlow()
 
-    private val _filteredHabits = MutableStateFlow<List<Habit>>(emptyList())
-    val filteredHabits: StateFlow<List<Habit>> = _filteredHabits.asStateFlow()
+    // Derived StateFlow for filtered habits
+    val filteredHabits: StateFlow<List<Habit>> = _habits
+        .map { habitsMap ->
+            applyFilters(habitsMap.values.toList(), _filterCriteria.value)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     init {
         loadHabits()
-
-        viewModelScope.launch {
-            _filterCriteria.observeForever { criteria ->
-                applyFilters()
-            }
-        }
     }
 
     private fun loadHabits() {
@@ -53,24 +58,14 @@ class HabitListViewModel @Inject constructor(
             getHabitsUseCase().collect { habitsMap ->
                 Log.d(TAG, "Repository habits changed: ${habitsMap.size} items")
                 _habits.value = habitsMap
-                applyFilters()
             }
         }
     }
 
-    private fun applyFilters() {
-        viewModelScope.launch {
-            val habits = _habits.value.values.toList()
-            val criteria = _filterCriteria.value ?: FilterCriteria()
-            _filteredHabits.value = applyFilters(habits, criteria)
-            Log.d(TAG, "Filtered habits updated: ${_filteredHabits.value.size} items")
-        }
-    }
-
-    // метод не используется! (переключить направление сортировки())
     fun toggleSortDirection() {
-        _filterCriteria.value =
-            _filterCriteria.value?.copy(ascending = !(_filterCriteria.value?.ascending ?: true))
+        _filterCriteria.value = _filterCriteria.value.copy(
+            ascending = !_filterCriteria.value.ascending
+        )
     }
 
     fun updateFilters(criteria: FilterCriteria) {

@@ -7,6 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.domain.model.HabitType
 import com.example.domain.model.Habit
@@ -14,6 +17,8 @@ import com.example.presentation.util.Constants
 import com.example.presentation.view.adapter.HabitAdapter
 import com.example.presentation.viewmodel.HabitListViewModel
 import com.example.presentation.databinding.FragmentHabitsListBinding
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class HabitListFragment : Fragment() {
 
@@ -51,7 +56,7 @@ class HabitListFragment : Fragment() {
 
         setupRecyclerView()
         setupFilterButton()
-        observeViewModel()
+        collectFlows()
     }
 
     private fun setupRecyclerView() {
@@ -70,6 +75,7 @@ class HabitListFragment : Fragment() {
             showFilterBottomSheet()
         }
     }
+
     private fun showFilterBottomSheet() {
         val filterBottomSheet = HabitFilterFragment.newInstance()
         filterBottomSheet.show(parentFragmentManager, HabitFilterFragment.TAG)
@@ -79,10 +85,15 @@ class HabitListFragment : Fragment() {
         fragmentListener?.onEditHabit(habit)
     }
 
-    private fun observeViewModel() {
-        viewModel.filteredHabits.observe(viewLifecycleOwner) { filteredHabits ->
-            val habitsOfCurrentType = filteredHabits.filter { it.type == habitType }
-            adapter.submitList(habitsOfCurrentType)
+    // New method to collect Flow instead of observing LiveData
+    private fun collectFlows() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.filteredHabits.collectLatest { filteredHabits ->
+                    val habitsOfCurrentType = filteredHabits.filter { it.type == habitType }
+                    adapter.submitList(habitsOfCurrentType)
+                }
+            }
         }
     }
 

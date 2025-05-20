@@ -64,8 +64,11 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
+    // Glide for navbar image
+    implementation(libs.glide)
+    ksp(libs.glide.ksp)
+
     // Dagger-Hilt
     implementation(libs.hilt.android)
-    implementation(libs.glide)
     ksp(libs.hilt.compiler)
 }

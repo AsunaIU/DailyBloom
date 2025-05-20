@@ -8,7 +8,8 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
-import com.example.dailybloom.R
+import com.example.presentation.R
+
 
 class ColorPicker @JvmOverloads constructor(
     context: Context,

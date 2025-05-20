@@ -44,8 +44,10 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-    androidResources {
-        generateLocaleConfig = true
+
+    afterEvaluate {
+        tasks.matching { it.name.startsWith("extract") && it.name.endsWith("SupportedLocales") }
+            .configureEach { enabled = false }
     }
 
 }
