@@ -1,5 +1,6 @@
 package com.example.presentation.view
 
+import HabitEditViewModel
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -13,12 +14,17 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.presentation.util.Constants
-import com.example.presentation.viewmodel.HabitEditViewModel
 import com.example.presentation.viewmodel.viewmodeldata.UiHabit
 import com.example.presentation.R
 import com.example.presentation.databinding.FragmentCreateHabitBinding
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class CreateHabitFragment : Fragment() {
 
     private val viewModel: HabitEditViewModel by viewModels()
@@ -65,6 +71,18 @@ class CreateHabitFragment : Fragment() {
         restoreState(savedInstanceState)
         setupUI()
         setupObservers()
+
+        collectFlows()
+    }
+
+    private fun collectFlows() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.habits.collect { habitsMap ->
+                    Log.d("CreateHabitFragment", "Habits flow collected: ${habitsMap.size} items")
+                }
+            }
+        }
     }
 
     // сохраняет состояние UI в Bundle

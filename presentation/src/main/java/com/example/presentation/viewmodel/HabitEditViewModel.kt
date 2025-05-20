@@ -1,60 +1,77 @@
-package com.example.presentation.viewmodel
-
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.domain.repository.HabitRepository
 import com.example.domain.model.Habit
 import com.example.domain.model.HabitType
 import com.example.domain.model.Periodicity
 import com.example.domain.model.Priority
-import com.example.presentation.util.Constants
-import com.example.presentation.viewmodel.viewmodeldata.UiHabit
+import com.example.domain.usecase.AddHabitUseCase
+import com.example.domain.usecase.GetHabitsUseCase
+import com.example.domain.usecase.RemoveHabitUseCase
+import com.example.domain.usecase.SetHabitDoneUseCase
+import com.example.domain.usecase.UpdateHabitUseCase
 import com.example.presentation.R
+import com.example.presentation.util.Constants
+import com.example.presentation.viewmodel.viewmodeldata.HabitMapper
+import com.example.presentation.viewmodel.viewmodeldata.UiHabit
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
+@HiltViewModel
+class HabitEditViewModel @Inject constructor(
+    private val getHabitsUseCase: GetHabitsUseCase,
+    private val addHabitUseCase: AddHabitUseCase,
+    private val updateHabitUseCase: UpdateHabitUseCase,
+    private val removeHabitUseCase: RemoveHabitUseCase,
+    private val setHabitDoneUseCase: SetHabitDoneUseCase,
+    private val savedStateHandle: SavedStateHandle
+) : ViewModel() {
 
-    private val _uiState = MutableLiveData(UiHabit()) // создаётся объект UIState с значениями по умолчанию
+    private val _uiState =
+        MutableLiveData(UiHabit()) // создаётся объект UIState с значениями по умолчанию
     val uiState: LiveData<UiHabit> = _uiState
 
     private val _operationStatus = MutableLiveData<OperationStatus?>()
     val operationStatus: LiveData<OperationStatus?> = _operationStatus
 
     // ID редактируемой привычки, null - если создается новая привычка
-    private val habitId: String? = handle.get<String>(Constants.ARG_HABIT_ID)
+    private val habitId: String? = savedStateHandle.get<String>(Constants.ARG_HABIT_ID)
 
-    val habits: LiveData<Map<String, Habit>> =
-        HabitRepository.habits.asLiveData(viewModelScope.coroutineContext)
-
+    // Теперь используем Flow вместо LiveData
+    private val _habits = MutableStateFlow<Map<String, Habit>>(emptyMap())
+    val habits: StateFlow<Map<String, Habit>> = _habits.asStateFlow()
 
     init {
-        loadHabitById()  // Попытаемся загрузить привычку по ID, если мы редактируем существующую привычку
+        loadHabits()    // сбор всей мапы привычек из репозитория через Flow -> в _habits: StateFlow<Map<String, Habit>>
+        loadHabitById() // если habitId != null, корутина «подсветит» в _uiState привычку по  ID
+    }
+
+    // Load habits from repository using Flow
+    private fun loadHabits() {
+        viewModelScope.launch {
+            getHabitsUseCase().collect { habitsMap ->
+                _habits.value = habitsMap
+            }
+        }
     }
 
     // Загружаем привычку по идентификатору из репозитория, если идентификатор доступен
     private fun loadHabitById() {
         habitId?.let { id ->
-            habits.value?.get(id)?.let { habit ->
-                _uiState.value = Habit.toUiHabit(habit)
-            }
-        }
-
-        if (habitId != null) {
             viewModelScope.launch {
-                habits.observeForever { habitsMap ->
-
-                    habitId.let { id ->
-                        habitsMap[id]?.let { updatedHabit ->
-                            val newUiState = Habit.toUiHabit(updatedHabit)
-
-                            if (_uiState.value != newUiState) {
-                                _uiState.value = newUiState
-                            }
+                getHabitsUseCase().collect { habitsMap ->
+                    habitsMap[id]?.let { habit ->
+                        val newUiState = HabitMapper.toUiHabit(habit)
+                        if (_uiState.value != newUiState) {
+                            _uiState.value = newUiState
                         }
                     }
                 }
@@ -120,30 +137,28 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
         val periodicity = Periodicity.entries[state.periodicityPos]
         val frequency = state.frequency.toIntOrNull() ?: 1
 
-        val habit =
-            Habit( // обновляется привычка с указанным id
-                id = habitId ?: "",
-                title = state.title,
-                description = state.description,
-                priority = priority,
-                type = type,
-                frequency = frequency,
-                periodicity = periodicity,
-                color = state.selectedColor,
-                done = state.done
-            )
+        val habit = Habit( // обновляется привычка с указанным id
+            id = habitId ?: "",
+            title = state.title,
+            description = state.description,
+            priority = priority,
+            type = type,
+            frequency = frequency,
+            periodicity = periodicity,
+            color = state.selectedColor,
+            done = state.done
+        )
 
         viewModelScope.launch {
             val result = if (habitId == null) {
-                HabitRepository.addHabit(habit)
+                addHabitUseCase(habit)
             } else {
-                HabitRepository.updateHabit(habitId, habit)
+                updateHabitUseCase(habitId, habit)
             }
             Log.d("ViewModel", "$result")
 
-            _operationStatus.value =
-                if (result) OperationStatus.Success
-                else OperationStatus.Error("Failed to save habit")
+            _operationStatus.value = if (result.isSuccess) OperationStatus.Success
+            else OperationStatus.Error("Failed to save habit")
         }
     }
 
@@ -157,11 +172,10 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
         _operationStatus.value = OperationStatus.InProgress
 
         viewModelScope.launch {
-            val result = HabitRepository.removeHabit(habitId)
+            val result = removeHabitUseCase(habitId)
 
-            _operationStatus.value =
-                if (result) OperationStatus.Success
-                else OperationStatus.Error("Failed to delete habit")
+            _operationStatus.value = if (result.isSuccess) OperationStatus.Success
+            else OperationStatus.Error("Failed to delete habit")
         }
     }
 
@@ -177,11 +191,10 @@ class HabitEditViewModel(handle: SavedStateHandle) : ViewModel() {
         viewModelScope.launch {
             updateDoneStatus(true)
 
-            val result = HabitRepository.setHabitDone(habitId)
+            val result = setHabitDoneUseCase(habitId)
 
-            _operationStatus.value =
-                if (result) OperationStatus.Success
-                else OperationStatus.Error("Failed to mark habit as done")
+            _operationStatus.value = if (result.isSuccess) OperationStatus.Success
+            else OperationStatus.Error("Failed to mark habit as done")
         }
     }
 
