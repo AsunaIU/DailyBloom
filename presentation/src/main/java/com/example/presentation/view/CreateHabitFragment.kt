@@ -126,9 +126,9 @@ class CreateHabitFragment : Fragment() {
                 HabitEditViewModel.OperationStatus.InProgress -> {
                     // можно сделать ProgressBar
                 }
-                null -> {
-                    // статус ещё не установлен или сброшен — ничего не делаем
+                null -> { // статус ещё не установлен или сброшен — ничего не делаем
                 }
+                else -> {}
             }
         }
     }

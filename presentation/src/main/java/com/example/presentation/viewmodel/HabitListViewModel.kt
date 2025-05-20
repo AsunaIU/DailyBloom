@@ -67,6 +67,7 @@ class HabitListViewModel @Inject constructor(
         }
     }
 
+    // метод не используется! (переключить направление сортировки())
     fun toggleSortDirection() {
         _filterCriteria.value =
             _filterCriteria.value?.copy(ascending = !(_filterCriteria.value?.ascending ?: true))
