@@ -16,9 +16,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "DailyBloom"
 include(":app")
-include(":domain")
 include(":data")
+include(":domain")
 include(":presentation")
-include(":data:dailybloom")
-include(":domain:dailybloom")
-include(":presentation:dailybloom")

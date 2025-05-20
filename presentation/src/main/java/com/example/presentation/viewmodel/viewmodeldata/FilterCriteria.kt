@@ -1,0 +1,10 @@
+package com.example.presentation.viewmodel.viewmodeldata
+
+import com.example.domain.model.Priority
+
+data class FilterCriteria(
+    val searchQuery: String = "",
+    val sortOption: SortOption = SortOption.CREATION_DATE,
+    val priorityFilters: Set<Priority> = setOf(),
+    val ascending: Boolean = true,
+)

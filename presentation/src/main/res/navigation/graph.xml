@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/habitViewPagerFragment">
+
+    <fragment
+        android:id="@+id/habitViewPagerFragment"
+        android:name="com.example.presentation.view.HabitViewPagerFragment"
+        android:label="Habit Tracker" >
+        <action
+            android:id="@+id/action_habitViewPagerFragment_to_createHabitFragment"
+            app:destination="@id/createHabitFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/infoFragment"
+        android:name="com.example.presentation.view.InfoFragment"
+        android:label="About DailyBloom"
+        tools:layout="@layout/fragment_info" />
+
+    <fragment
+        android:id="@+id/createHabitFragment"
+        android:name="com.example.presentation.view.CreateHabitFragment"
+        android:label="Create Habit"
+        tools:layout="@layout/fragment_create_habit" >
+
+    <!-- Навигация обратно на HabitViewPagerFragment после сохранения/удаления -->
+    <action
+        android:id="@+id/action_createHabitFragment_to_habitViewPagerFragment"
+        app:destination="@id/habitViewPagerFragment"
+        app:popUpTo="@id/habitViewPagerFragment"
+        app:popUpToInclusive="false" />
+    </fragment>
+
+    </navigation>
