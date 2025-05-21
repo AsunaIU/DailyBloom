@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.kapt)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.hilt)
@@ -95,7 +95,7 @@ dependencies {
     // Room Components
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
+    kapt(libs.androidx.room.compiler)
 
     // Coroutines
     implementation (libs.kotlinx.coroutines.android)
@@ -108,9 +108,9 @@ dependencies {
 
     // Dagger-Hilt
     implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
+    kapt(libs.hilt.compiler)
 
     // Glide for navbar image
     implementation(libs.glide)
-    ksp(libs.glide.ksp)
+    kapt(libs.hilt.compiler)
 }

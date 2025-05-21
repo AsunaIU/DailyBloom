@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.kapt)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.hilt)
 }
@@ -66,9 +66,9 @@ dependencies {
 
     // Glide for navbar image
     implementation(libs.glide)
-    ksp(libs.glide.ksp)
+    kapt(libs.hilt.compiler)
 
     // Dagger-Hilt
     implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
+    kapt(libs.hilt.compiler)
 }
