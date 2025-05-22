@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,23 +28,25 @@ class HabitListViewModel @Inject constructor(
 
     private val TAG = HabitListViewModel::class.java.simpleName
 
-    // Original Flow from repository
     private val _habits = MutableStateFlow<Map<String, Habit>>(emptyMap())
     val habits: StateFlow<Map<String, Habit>> = _habits.asStateFlow()
 
-    // StateFlow for filter criteria (was LiveData)
     private val _filterCriteria = MutableStateFlow(FilterCriteria())
     val filterCriteria: StateFlow<FilterCriteria> = _filterCriteria.asStateFlow()
 
-    // StateFlow for operation status (was LiveData)
     private val _operationStatus = MutableStateFlow<OperationStatus?>(null)
     val operationStatus: StateFlow<OperationStatus?> = _operationStatus.asStateFlow()
 
-    // Derived StateFlow for filtered habits
-    val filteredHabits: StateFlow<List<Habit>> = _habits
-        .map { habitsMap ->
-            applyFilters(habitsMap.values.toList(), _filterCriteria.value)
-        }
+    val filteredHabits: StateFlow<List<Habit>> = combine(
+        _habits,
+        _filterCriteria
+    ) { habitsMap, criteria ->
+        val list = habitsMap.values.toList()
+        Log.d(TAG, "Applying filters on ${list.size} habits with criteria=$criteria")
+        val result = applyFilters(list, criteria)
+        Log.d(TAG, "Filtered result contains ${result.size} habits")
+        result
+    }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
