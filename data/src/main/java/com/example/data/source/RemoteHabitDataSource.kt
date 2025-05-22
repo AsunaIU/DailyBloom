@@ -1,28 +1,31 @@
-package com.example.dailybloom.data.source
+package com.example.data.source
 
 import android.util.Log
-import com.example.dailybloom.data.remote.HabitMappers.toDomainModel
-import com.example.dailybloom.data.remote.HabitMappers.toRequestModel
-import com.example.dailybloom.data.remote.HabitApi
-import com.example.dailybloom.data.remote.HabitDoneRequest
-import com.example.dailybloom.data.remote.UidResponse
-import com.example.dailybloom.model.Habit
+import com.example.data.remote.HabitApi
+import com.example.data.remote.HabitDoneRequest
+import com.example.data.remote.HabitMappers.toDomainModel
+import com.example.data.remote.HabitMappers.toRequestModel
+import com.example.data.remote.UidResponse
+import com.example.domain.model.Habit
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeout
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class RemoteHabitDataSource(private val habitApi: HabitApi) : HabitDataSource {
+@Singleton
+class RemoteHabitDataSource @Inject constructor (private val habitApi: HabitApi) {
 
     private val TAG = "RemoteHabitDataSource"
 
-    override suspend fun getHabits(): Result<List<Habit>> {
+    suspend fun getHabits(): Result<List<Habit>> {
         return executeWithRetry {
             val response = habitApi.getHabits()
             response.map { it.toDomainModel() }
         }
     }
 
-    override suspend fun addHabit(habit: Habit): Result<Habit> {
+    suspend fun addHabit(habit: Habit): Result<Habit> {
         return executeWithRetry {
             val request = habit.toRequestModel(id = false)
             val response = habitApi.addOrUpdateHabit(habit = request)
@@ -31,7 +34,7 @@ class RemoteHabitDataSource(private val habitApi: HabitApi) : HabitDataSource {
         }
     }
 
-    override suspend fun updateHabit(habitId: String, updatedHabit: Habit): Result<Habit> {
+    suspend fun updateHabit(habitId: String, updatedHabit: Habit): Result<Habit> {
         return executeWithRetry {
             val request = updatedHabit.toRequestModel(id = true)
             Log.d(TAG, "Sending habit to API: ${request.uid}")
@@ -41,13 +44,13 @@ class RemoteHabitDataSource(private val habitApi: HabitApi) : HabitDataSource {
         }
     }
 
-    override suspend fun deleteHabit(habitId: String): Result<Unit> {
+    suspend fun deleteHabit(habitId: String): Result<Unit> {
         return executeWithRetry {
             habitApi.deleteHabit(uid = UidResponse(habitId))
         }
     }
 
-    override suspend fun setHabitDone(habitId: String, date: Long): Result<Unit> {
+    suspend fun setHabitDone(habitId: String, date: Long): Result<Unit> {
         return executeWithRetry {
             Log.d(TAG, "Setting habit as done: $habitId, date: $date")
             val request = HabitDoneRequest(uid = habitId, date = date)

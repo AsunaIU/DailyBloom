@@ -1,4 +1,4 @@
-package com.example.dailybloom.data.local
+package com.example.data.local
 
 import android.content.Context
 import android.util.Log

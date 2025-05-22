@@ -1,7 +1,7 @@
 package com.example.dailybloom.view.adapter
 
 import androidx.recyclerview.widget.DiffUtil
-import com.example.dailybloom.model.Habit
+import com.example.domain.model.Habit
 
 object HabitDiffCallback : DiffUtil.ItemCallback<Habit>() {
     override fun areItemsTheSame(oldItem: Habit, newItem: Habit): Boolean {

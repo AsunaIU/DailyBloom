@@ -1,6 +1,6 @@
-package com.example.dailybloom.data.remote
+package com.example.data.remote
 
-import com.example.dailybloom.BuildConfig
+import com.example.data.BuildConfig
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.HTTP

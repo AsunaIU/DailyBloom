@@ -1,6 +1,5 @@
-package com.example.dailybloom.data.local
+package com.example.data.local
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.OnConflictStrategy
 import androidx.room.Query

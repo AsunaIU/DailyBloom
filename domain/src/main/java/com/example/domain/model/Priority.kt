@@ -1,4 +1,4 @@
-package com.example.dailybloom.model
+package com.example.domain.model
 
 enum class Priority {
     HIGH, MEDIUM, LOW;
