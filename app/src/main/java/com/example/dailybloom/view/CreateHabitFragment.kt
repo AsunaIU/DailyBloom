@@ -38,18 +38,6 @@ class CreateHabitFragment : Fragment() {
 
     private var lastAction: LastAction = LastAction.NONE
 
-    companion object {
-        fun newInstance(habitId: String? = null): CreateHabitFragment {
-            val fragment = CreateHabitFragment()
-            val args = Bundle()
-            if (habitId != null) {
-                args.putString(Constants.ARG_HABIT_ID, habitId)
-            }
-            fragment.arguments = args
-            return fragment
-        }
-    }
-
     private enum class LastAction {
         NONE, SAVE, DELETE
     }
@@ -124,15 +112,13 @@ class CreateHabitFragment : Fragment() {
             null -> {
                 // статус ещё не установлен или сброшен — ничего не делаем
             }
-
-            else -> {}
         }
     }
 
     // сохраняет состояние UI в Bundle
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        viewModel.uiState.value?.let {
+        viewModel.uiState.value.let {
             outState.putParcelable(Constants.KEY_UI_STATE, it)
         }
     }

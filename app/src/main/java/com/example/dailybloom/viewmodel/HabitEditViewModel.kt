@@ -31,33 +31,33 @@ class HabitEditViewModel @Inject constructor(
     private val updateHabitUseCase: UpdateHabitUseCase,
     private val removeHabitUseCase: RemoveHabitUseCase,
     private val setHabitDoneUseCase: SetHabitDoneUseCase,
-    private val savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    // StateFlow instead of LiveData
+    private val TAG = HabitEditViewModel::class.java.simpleName
+
     private val _uiState = MutableStateFlow(UiHabit())
     val uiState: StateFlow<UiHabit> = _uiState.asStateFlow()
 
-    // StateFlow for operation status
     private val _operationStatus = MutableStateFlow<OperationStatus?>(null)
     val operationStatus: StateFlow<OperationStatus?> = _operationStatus.asStateFlow()
 
     // ID редактируемой привычки, null - если создается новая привычка
     private val habitId: String? = savedStateHandle.get<String>(Constants.ARG_HABIT_ID)
 
-    // Flow to collect habits from repository
     private val _habits = MutableStateFlow<Map<String, Habit>>(emptyMap())
     val habits: StateFlow<Map<String, Habit>> = _habits.asStateFlow()
 
     init {
+        Log.d(TAG, "Initializing ViewModel with habitId=$habitId")
         loadHabits()    // сбор всей мапы привычек из репозитория через Flow -> в _habits: StateFlow<Map<String, Habit>>
         loadHabitById() // если habitId != null, корутина «подсветит» в _uiState привычку по ID
     }
 
-    // Load habits from repository using Flow
     private fun loadHabits() {
         viewModelScope.launch {
             getHabitsUseCase().collect { habitsMap ->
+                Log.d(TAG, "Loaded ${habitsMap.size} habits from repository")
                 _habits.value = habitsMap
             }
         }
@@ -71,6 +71,7 @@ class HabitEditViewModel @Inject constructor(
                     habitsMap[id]?.let { habit ->
                         val newUiState = HabitMapper.toUiHabit(habit)
                         if (_uiState.value != newUiState) {
+                            Log.d(TAG, "Updating UI state with loaded habit data")
                             _uiState.value = newUiState
                         }
                     }
