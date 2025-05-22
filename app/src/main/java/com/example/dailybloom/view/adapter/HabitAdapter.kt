@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dailybloom.R
 import com.example.domain.model.Habit
@@ -43,7 +44,6 @@ class HabitAdapter(
         val unfulfilledHabits = sortedHabits.filter { !it.done }
         val completedHabits = sortedHabits.filter { it.done }
 
-        // фильтрация невыполненных привычек
         if (unfulfilledHabits.isNotEmpty()) {
             Log.d(TAG, "submitList: adding Unfulfilled section with ${unfulfilledHabits.size} items")
             newItems.add(ListItem.SectionHeader("Unfulfilled"))
@@ -57,8 +57,12 @@ class HabitAdapter(
             completedHabits.forEach { newItems.add(ListItem.HabitItem(it)) }
         }
 
+        val diffCallback = ListItemDiffCallback(items, newItems)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
         items = newItems
-        notifyDataSetChanged()
+        diffResult.dispatchUpdatesTo(this)
+
         Log.d(TAG, "submitList: items updated, total display count=${items.size}")
     }
 
@@ -87,7 +91,7 @@ class HabitAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        Log.d(TAG, "onBindViewHolder: position=$position, item=$items")
+        Log.d(TAG, "onBindViewHolder: position=$position")
         when (val item = items[position]) {
             is ListItem.SectionHeader -> (holder as SectionHeaderViewHolder).bind(item.title)
             is ListItem.HabitItem -> (holder as HabitViewHolder).bind(item.habit, onClick, viewModel)
@@ -95,6 +99,42 @@ class HabitAdapter(
     }
 
     override fun getItemCount(): Int = items.size
+
+    private class ListItemDiffCallback(
+        private val oldList: List<ListItem>,
+        private val newList: List<ListItem>
+    ) : DiffUtil.Callback() {
+
+        override fun getOldListSize(): Int = oldList.size
+
+        override fun getNewListSize(): Int = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val oldItem = oldList[oldItemPosition]
+            val newItem = newList[newItemPosition]
+
+            return when {
+                oldItem is ListItem.SectionHeader && newItem is ListItem.SectionHeader ->
+                    oldItem.title == newItem.title
+                oldItem is ListItem.HabitItem && newItem is ListItem.HabitItem ->
+                    oldItem.habit.id == newItem.habit.id
+                else -> false
+            }
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val oldItem = oldList[oldItemPosition]
+            val newItem = newList[newItemPosition]
+
+            return when {
+                oldItem is ListItem.SectionHeader && newItem is ListItem.SectionHeader ->
+                    oldItem == newItem
+                oldItem is ListItem.HabitItem && newItem is ListItem.HabitItem ->
+                    oldItem.habit == newItem.habit
+                else -> false
+            }
+        }
+    }
 
     // ViewHolder для заголовка секции
     class SectionHeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -134,7 +174,6 @@ class HabitAdapter(
                 Log.d(TAG, "Action button clicked for habit id=${habit.id}, done=${habit.done}")
 
                 if (!habit.done) {
-                    // Use the viewModel to update the habit status
                     viewModel.setHabitDone(habit.id)
 
                     if (habit.type == HabitType.GOOD) {
@@ -151,8 +190,6 @@ class HabitAdapter(
                         ).show()
                     }
                 } else {
-                    // For already done habits, use the same viewModel logic
-                    // We'll toggle its done status by updating it
                     viewModel.setHabitDone(habit.id)
 
                     if (habit.type == HabitType.GOOD) {
