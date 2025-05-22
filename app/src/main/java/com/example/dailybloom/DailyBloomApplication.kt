@@ -4,8 +4,4 @@ import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class DailyBloomApplication : Application() {
-    override fun onCreate() {
-        super.onCreate()
-    }
-}
+class DailyBloomApplication : Application()
