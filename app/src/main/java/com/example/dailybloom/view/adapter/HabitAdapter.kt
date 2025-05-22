@@ -10,9 +10,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dailybloom.R
-import com.example.dailybloom.model.Habit
-import com.example.dailybloom.model.HabitType
-import com.example.dailybloom.model.Priority
+import com.example.domain.model.Habit
+import com.example.domain.model.HabitType
+import com.example.domain.model.Priority
 import com.example.dailybloom.util.Constants
 import com.example.dailybloom.view.HabitFilterFragment.Companion.TAG
 import com.example.dailybloom.viewmodel.HabitListViewModel

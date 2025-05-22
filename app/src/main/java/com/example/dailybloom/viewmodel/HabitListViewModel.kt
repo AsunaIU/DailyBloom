@@ -1,51 +1,73 @@
 package com.example.dailybloom.viewmodel
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
+
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.dailybloom.model.Habit
-import com.example.dailybloom.data.local.HabitRepository
 import com.example.dailybloom.viewmodel.viewmodeldata.FilterCriteria
 import com.example.dailybloom.viewmodel.viewmodeldata.SortOption
+import com.example.domain.model.Habit
+import com.example.domain.usecase.GetHabitsUseCase
+import com.example.domain.usecase.UpdateHabitUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
-class HabitListViewModel : ViewModel() {
+@HiltViewModel
+class HabitListViewModel @Inject constructor(
+    private val getHabitsUseCase: GetHabitsUseCase,
+    private val updateHabitUseCase: UpdateHabitUseCase
+) : ViewModel() {
 
     private val TAG = HabitListViewModel::class.java.simpleName
 
-    private val repositoryHabits: LiveData<Map<String, Habit>> =
-        HabitRepository.habits.asLiveData(viewModelScope.coroutineContext)
+    // Original Flow from repository
+    private val _habits = MutableStateFlow<Map<String, Habit>>(emptyMap())
+    val habits: StateFlow<Map<String, Habit>> = _habits.asStateFlow()
 
-    private val _filterCriteria = MutableLiveData(FilterCriteria())
-    val filterCriteria: LiveData<FilterCriteria> = _filterCriteria
+    // StateFlow for filter criteria (was LiveData)
+    private val _filterCriteria = MutableStateFlow(FilterCriteria())
+    val filterCriteria: StateFlow<FilterCriteria> = _filterCriteria.asStateFlow()
 
-    private val _operationStatus = MutableLiveData<OperationStatus?>()
-    val operationStatus: LiveData<OperationStatus?> = _operationStatus
+    // StateFlow for operation status (was LiveData)
+    private val _operationStatus = MutableStateFlow<OperationStatus?>(null)
+    val operationStatus: StateFlow<OperationStatus?> = _operationStatus.asStateFlow()
 
-    private val _filteredHabits = MediatorLiveData<List<Habit>>().apply {
-        addSource(repositoryHabits) { habits ->
-            Log.d(TAG, "repositoryHabits changed: ${habits.size} items")
-            value = applyFilters(habits.values.toList(), _filterCriteria.value ?: FilterCriteria())
-            Log.d(TAG, "FilteredHabits updated from repositoryHabits: ${value!!.size} items")
+    // Derived StateFlow for filtered habits
+    val filteredHabits: StateFlow<List<Habit>> = _habits
+        .map { habitsMap ->
+            applyFilters(habitsMap.values.toList(), _filterCriteria.value)
         }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
-        addSource(_filterCriteria) { criteria ->
-            Log.d(TAG, "filterCriteria changed: $criteria")
-            value = applyFilters(repositoryHabits.value?.values?.toList() ?: emptyList(), criteria)
+    init {
+        loadHabits()
+    }
+
+    private fun loadHabits() {
+        viewModelScope.launch {
+            getHabitsUseCase().collect { habitsMap ->
+                Log.d(TAG, "Repository habits changed: ${habitsMap.size} items")
+                _habits.value = habitsMap
+            }
         }
     }
 
-    val filteredHabits: LiveData<List<Habit>> = _filteredHabits
-
-
     fun toggleSortDirection() {
-        _filterCriteria.value =
-            _filterCriteria.value?.copy(ascending = !(_filterCriteria.value?.ascending ?: true))
+        _filterCriteria.value = _filterCriteria.value.copy(
+            ascending = !_filterCriteria.value.ascending
+        )
     }
 
     fun updateFilters(criteria: FilterCriteria) {
@@ -61,13 +83,13 @@ class HabitListViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
-                val currentHabit = repositoryHabits.value?.get(habitId)
+                val currentHabit = _habits.value[habitId]
                 if (currentHabit != null) {
                     val updatedHabit = currentHabit.copy(done = !currentHabit.done)
 
-                    val result = HabitRepository.updateHabit(habitId, updatedHabit)
+                    val result = updateHabitUseCase(habitId, updatedHabit)
 
-                    _operationStatus.value = if (result) {
+                    _operationStatus.value = if (result.isSuccess) {
                         OperationStatus.Success
                     } else {
                         OperationStatus.Error("Failed to update habit status")

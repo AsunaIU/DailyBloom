@@ -2,9 +2,6 @@ package com.example.dailybloom.view
 
 import android.content.Context
 import android.os.Bundle
-import android.os.CountDownTimer
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -16,15 +13,20 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.dailybloom.R
 import com.example.dailybloom.databinding.FragmentCreateHabitBinding
 import com.example.dailybloom.util.Constants
 import com.example.dailybloom.viewmodel.HabitEditViewModel
 import com.example.dailybloom.viewmodel.viewmodeldata.UiHabit
-import kotlinx.coroutines.awaitCancellation
+
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class CreateHabitFragment : Fragment() {
 
     private val viewModel: HabitEditViewModel by viewModels()
@@ -70,7 +72,61 @@ class CreateHabitFragment : Fragment() {
 
         restoreState(savedInstanceState)
         setupUI()
-        setupObservers()
+        collectFlows()
+    }
+
+    private fun collectFlows() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collectLatest { state ->
+                    updateUI(state)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.operationStatus.collectLatest { status ->
+                    handleOperationStatus(status)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.habits.collectLatest { habitsMap ->
+                    Log.d("CreateHabitFragment", "Habits flow collected: ${habitsMap.size} items")
+                }
+            }
+        }
+    }
+
+    private fun handleOperationStatus(status: HabitEditViewModel.OperationStatus?) {
+        when (status) {
+            HabitEditViewModel.OperationStatus.Success -> {
+                Toast.makeText(context, "Операция выполнена успешно", Toast.LENGTH_SHORT).show()
+                viewModel.resetOperationStatus()
+
+                when (lastAction) {
+                    LastAction.SAVE -> fragmentListener?.onHabitSaved()
+                    LastAction.DELETE -> fragmentListener?.onHabitDeleted()
+                    LastAction.NONE -> Log.w("CreateHabitFragment", "Success status received but no action tracked")
+                }
+                lastAction = LastAction.NONE  // Сброс lastAction
+            }
+            is HabitEditViewModel.OperationStatus.Error -> {
+                Toast.makeText(context, "Ошибка: ${status.message}", Toast.LENGTH_SHORT).show()
+                viewModel.resetOperationStatus()
+            }
+            HabitEditViewModel.OperationStatus.InProgress -> {
+                // можно сделать ProgressBar
+            }
+            null -> {
+                // статус ещё не установлен или сброшен — ничего не делаем
+            }
+
+            else -> {}
+        }
     }
 
     // сохраняет состояние UI в Bundle
@@ -85,39 +141,6 @@ class CreateHabitFragment : Fragment() {
     private fun restoreState(savedInstanceState: Bundle?) {
         savedInstanceState?.getParcelable<UiHabit>(Constants.KEY_UI_STATE)?.let {
             viewModel.setUIState(it)
-        }
-    }
-
-    // фрагмент наблюдает за LiveData из ViewModel (uiState) и вызывает updateUI при изменениях
-    private fun setupObservers() {
-        viewModel.uiState.observe(viewLifecycleOwner) { state ->
-            updateUI(state)
-        }
-
-        viewModel.operationStatus.observe(viewLifecycleOwner) { status ->
-            when (status) {
-                HabitEditViewModel.OperationStatus.Success -> {
-                    Toast.makeText(context, "Операция выполнена успешно", Toast.LENGTH_SHORT).show()
-                    viewModel.resetOperationStatus()
-
-                    when (lastAction) {
-                        LastAction.SAVE -> fragmentListener?.onHabitSaved()
-                        LastAction.DELETE -> fragmentListener?.onHabitDeleted()
-                        LastAction.NONE -> Log.w("CreateHabitFragment", "Success status received but no action tracked")
-                    }
-                    lastAction = LastAction.NONE  // Сброс lastAction
-                }
-                is HabitEditViewModel.OperationStatus.Error -> {
-                    Toast.makeText(context, "Ошибка: ${status.message}", Toast.LENGTH_SHORT).show()
-                    viewModel.resetOperationStatus()
-                }
-                HabitEditViewModel.OperationStatus.InProgress -> {
-                    // можно сделать ProgressBar
-                }
-                null -> {
-                    // статус ещё не установлен или сброшен — ничего не делаем
-                }
-            }
         }
     }
 
@@ -207,7 +230,7 @@ class CreateHabitFragment : Fragment() {
         fun onHabitDeleted()
     }
     // интерфейс - способ уведомить Activity о том, что фрагмент успешно сохранил привычку
-    // контракт: «любая внешняя сущность (обычно Activity), желающая реагировать на событие “привычка сохранена”, должна реализовать этот метод»
+    // контракт: «любая внешняя сущность (обычно Activity), желающая реагировать на событие "привычка сохранена", должна реализовать этот метод»
 }
 
 // extension для Spinner (централизует пустую реализацию onNothingSelected)
