@@ -15,11 +15,13 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.dailybloom.R
 import com.example.dailybloom.databinding.ActivityMainBinding
-import com.example.dailybloom.model.Habit
 import com.example.dailybloom.util.Constants
+import com.example.domain.model.Habit
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.navigation.NavigationView
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(),
     HabitViewPagerFragment.HabitFragmentListener,
     CreateHabitFragment.CreateHabitListener,

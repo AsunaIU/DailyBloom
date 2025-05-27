@@ -9,8 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.dailybloom.databinding.FragmentHabitViewPagerBinding
-import com.example.dailybloom.model.Habit
-import com.example.dailybloom.model.HabitType
+import com.example.domain.model.Habit
+import com.example.domain.model.HabitType
 import com.google.android.material.tabs.TabLayoutMediator
 
 // класс - контейнер для переключения между Good/Bad Habits через ViewPager2
@@ -87,8 +87,12 @@ class HabitViewPagerFragment : Fragment() {
 
         override fun createFragment(position: Int): Fragment {
             return when (position) {
-                0 -> HabitListFragment.newInstance(HabitType.toDisplayString(HabitType.GOOD))
-                1 -> HabitListFragment.newInstance(HabitType.toDisplayString(HabitType.BAD))
+                0 -> HabitListFragment.newInstance(
+                    HabitType.toDisplayString(
+                        HabitType.GOOD))
+                1 -> HabitListFragment.newInstance(
+                    HabitType.toDisplayString(
+                        HabitType.BAD))
                 else -> throw IllegalArgumentException("Invalid position: $position")
             }
         }

@@ -3,8 +3,8 @@ package com.example.dailybloom.viewmodel.viewmodeldata
 import android.graphics.Color
 import android.os.Parcelable
 import com.example.dailybloom.R
-import com.example.dailybloom.model.Periodicity
-import com.example.dailybloom.model.Priority
+import com.example.domain.model.Periodicity
+import com.example.domain.model.Priority
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

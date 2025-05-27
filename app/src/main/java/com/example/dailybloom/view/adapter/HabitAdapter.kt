@@ -8,11 +8,12 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dailybloom.R
-import com.example.dailybloom.model.Habit
-import com.example.dailybloom.model.HabitType
-import com.example.dailybloom.model.Priority
+import com.example.domain.model.Habit
+import com.example.domain.model.HabitType
+import com.example.domain.model.Priority
 import com.example.dailybloom.util.Constants
 import com.example.dailybloom.view.HabitFilterFragment.Companion.TAG
 import com.example.dailybloom.viewmodel.HabitListViewModel
@@ -43,7 +44,6 @@ class HabitAdapter(
         val unfulfilledHabits = sortedHabits.filter { !it.done }
         val completedHabits = sortedHabits.filter { it.done }
 
-        // фильтрация невыполненных привычек
         if (unfulfilledHabits.isNotEmpty()) {
             Log.d(TAG, "submitList: adding Unfulfilled section with ${unfulfilledHabits.size} items")
             newItems.add(ListItem.SectionHeader("Unfulfilled"))
@@ -57,8 +57,12 @@ class HabitAdapter(
             completedHabits.forEach { newItems.add(ListItem.HabitItem(it)) }
         }
 
+        val diffCallback = ListItemDiffCallback(items, newItems)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
         items = newItems
-        notifyDataSetChanged()
+        diffResult.dispatchUpdatesTo(this)
+
         Log.d(TAG, "submitList: items updated, total display count=${items.size}")
     }
 
@@ -87,7 +91,7 @@ class HabitAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        Log.d(TAG, "onBindViewHolder: position=$position, item=$items")
+        Log.d(TAG, "onBindViewHolder: position=$position")
         when (val item = items[position]) {
             is ListItem.SectionHeader -> (holder as SectionHeaderViewHolder).bind(item.title)
             is ListItem.HabitItem -> (holder as HabitViewHolder).bind(item.habit, onClick, viewModel)
@@ -95,6 +99,42 @@ class HabitAdapter(
     }
 
     override fun getItemCount(): Int = items.size
+
+    private class ListItemDiffCallback(
+        private val oldList: List<ListItem>,
+        private val newList: List<ListItem>
+    ) : DiffUtil.Callback() {
+
+        override fun getOldListSize(): Int = oldList.size
+
+        override fun getNewListSize(): Int = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val oldItem = oldList[oldItemPosition]
+            val newItem = newList[newItemPosition]
+
+            return when {
+                oldItem is ListItem.SectionHeader && newItem is ListItem.SectionHeader ->
+                    oldItem.title == newItem.title
+                oldItem is ListItem.HabitItem && newItem is ListItem.HabitItem ->
+                    oldItem.habit.id == newItem.habit.id
+                else -> false
+            }
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val oldItem = oldList[oldItemPosition]
+            val newItem = newList[newItemPosition]
+
+            return when {
+                oldItem is ListItem.SectionHeader && newItem is ListItem.SectionHeader ->
+                    oldItem == newItem
+                oldItem is ListItem.HabitItem && newItem is ListItem.HabitItem ->
+                    oldItem.habit == newItem.habit
+                else -> false
+            }
+        }
+    }
 
     // ViewHolder для заголовка секции
     class SectionHeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -117,13 +157,17 @@ class HabitAdapter(
         // Привязка объекта привычки к представлениям
         @SuppressLint("SetTextI18n")
         fun bind(habit: Habit, onClick: (Habit) -> Unit, viewModel: HabitListViewModel) {
-            Log.d(TAG, "Binding habit id=${habit.id}, done=${habit.done}")
+            Log.d(TAG, "Binding habit id=${habit.id}, done=${habit.done}, completions=${habit.getCompletionsInCurrentPeriod()}/${habit.frequency}")
+
             title.text = habit.title
             description.text = habit.description
             colorIndicator.setBackgroundColor(habit.color)
             priority.text = Priority.toDisplayString(habit.priority)
             type.text = HabitType.toDisplayString(habit.type)
-            frequency.text = "${habit.frequency} per ${habit.periodicity}"
+
+            val completions = habit.getCompletionsInCurrentPeriod()
+            frequency.text = "$completions/${habit.frequency} per ${habit.periodicity}"
+
             actionButton.text = if (habit.done) "Done" else "Do it"
 
             // Обработчик клика на весь элемент
@@ -131,42 +175,32 @@ class HabitAdapter(
 
             // Обработчик клика на кнопку действия
             actionButton.setOnClickListener {
-                Log.d(TAG, "Action button clicked for habit id=${habit.id}, done=${habit.done}")
+                Log.d(TAG, "Action button clicked for habit id=${habit.id}, done=${habit.done}, canDoMore=${habit.canDoMore()}")
 
-                if (!habit.done) {
-                    // Use the viewModel to update the habit status
-                    viewModel.setHabitDone(habit.id)
+                viewModel.setHabitDone(habit.id)
 
-                    if (habit.type == HabitType.GOOD) {
-                        Toast.makeText(
-                            itemView.context,
-                            "You are breathtaking!",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                // Сообщение в зависимости от типа привычки и степени ее выполнения
+                val toastMessage = getToastMessage(habit)
+                Toast.makeText(itemView.context, toastMessage, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        private fun getToastMessage(habit: Habit): String {
+            val remainingCompletions = habit.getRemainingCompletions()
+
+            return when (habit.type) {
+                HabitType.GOOD -> {
+                    if (habit.canDoMore()) {
+                        "This is worth doing $remainingCompletions more times"
                     } else {
-                        Toast.makeText(
-                            itemView.context,
-                            "Stop doing this",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        "You are amazing!"
                     }
-                } else {
-                    // For already done habits, use the same viewModel logic
-                    // We'll toggle its done status by updating it
-                    viewModel.setHabitDone(habit.id)
-
-                    if (habit.type == HabitType.GOOD) {
-                        Toast.makeText(
-                            itemView.context,
-                            "It is worth doing this ${habit.frequency} more times",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                }
+                HabitType.BAD -> {
+                    if (habit.canDoMore()) {
+                        "You can do this $remainingCompletions more times"
                     } else {
-                        Toast.makeText(
-                            itemView.context,
-                            "You can do this ${habit.frequency} more times",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        "Stop doing this"
                     }
                 }
             }
