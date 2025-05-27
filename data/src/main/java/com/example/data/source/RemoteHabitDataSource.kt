@@ -55,7 +55,7 @@ class RemoteHabitDataSource @Inject constructor (private val habitApi: HabitApi)
             Log.d(TAG, "Setting habit as done: $habitId, date: $date")
             val request = HabitDoneRequest(uid = habitId, date = date)
             val response = habitApi.setHabitDone(habitDone = request)
-            Log.d(TAG, "Habit marked as done, response: ${response.uid}")
+            Log.d(TAG, "Habit marked as done, response: ${response.code()}")
             Unit
         }
     }

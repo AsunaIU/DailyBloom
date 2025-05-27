@@ -35,6 +35,7 @@ class HabitRepositoryImpl @Inject constructor(
                 for (habit in remoteHabits) {
                     localDataSource.addHabit(habit)
                 }
+                Log.d("HabitRepositoryImpl", "Successfully refreshed ${remoteHabits.size} habits from remote")
             } else {
                 Log.d("HabitRepositoryImpl", "Failed to refresh habits from remote, trying locally")
             }
@@ -44,7 +45,6 @@ class HabitRepositoryImpl @Inject constructor(
             Log.e("HabitRepositoryImpl", "Exception while refreshing habits", e)
         }
     }
-
 
     override fun getHabitsFlow(): Flow<Map<String, Habit>> {
         return localDataSource.getHabitsFlow()
@@ -129,17 +129,19 @@ class HabitRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun setHabitDone(habitId: String): Result<Boolean> {
+    override suspend fun setHabitDone(habitId: String, date: Long): Result<Boolean> {
         return try {
-            val currentDate = System.currentTimeMillis()
-            val remoteResult = remoteDataSource.setHabitDone(habitId, currentDate)
+            Log.d("HabitRepositoryImpl", "Setting habit done: $habitId at $date")
+            val remoteResult = remoteDataSource.setHabitDone(habitId, date)
 
             if (remoteResult.isSuccess) {
                 Log.d("HabitRepositoryImpl", "Remote set habit done successful for habit: $habitId")
-                val localResult = localDataSource.setHabitDone(habitId, currentDate)
+                val localResult = localDataSource.setHabitDone(habitId, date)
 
                 if (localResult.isSuccess) {
                     Log.d("HabitRepositoryImpl", "Local set habit done successful for habit: $habitId")
+                    // Обновить данные с сервера -> получить обновленные doneDates
+                    refreshHabits()
                     Result.success(true)
                 } else {
                     throw Exception("Failed to mark habit as done locally")

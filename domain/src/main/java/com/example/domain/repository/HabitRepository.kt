@@ -10,6 +10,6 @@ interface HabitRepository {
     suspend fun addHabit(habit: Habit): Result<Boolean>
     suspend fun updateHabit(habitId: String, updatedHabit: Habit): Result<Boolean>
     suspend fun removeHabit(habitId: String): Result<Boolean>
-    suspend fun setHabitDone(habitId: String): Result<Boolean>
+    suspend fun setHabitDone(habitId: String, date: Long = System.currentTimeMillis()): Result<Boolean>
     fun syncWithServer()
 }

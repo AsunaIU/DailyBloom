@@ -1,6 +1,7 @@
 package com.example.data.remote
 
 import com.example.data.BuildConfig
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.HTTP
@@ -29,5 +30,5 @@ interface HabitApi {
     suspend fun setHabitDone(
         @Header("Authorization") token: String = BuildConfig.API_TOKEN,
         @Body habitDone: HabitDoneRequest
-    ): UidResponse
+    ): Response<Unit>
 }

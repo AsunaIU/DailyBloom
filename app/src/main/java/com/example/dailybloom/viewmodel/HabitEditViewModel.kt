@@ -88,18 +88,13 @@ class HabitEditViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(selectedColor = color)
     }
 
-    fun updateDoneStatus(done: Boolean) {
-        _uiState.value = _uiState.value.copy(done = done)
-    }
-
     fun updateUIState(
         title: String? = null,
         description: String? = null,
         priorityPos: Int? = null,
         typeId: Int? = null,
         frequency: String? = null,
-        periodicityPos: Int? = null,
-        done: Boolean? = null,
+        periodicityPos: Int? = null
     ) {
         val current = _uiState.value
         // current не null – либо используется текущее состояние, либо создаётся новое с дефолтными значениями
@@ -110,8 +105,7 @@ class HabitEditViewModel @Inject constructor(
             priorityPos = priorityPos ?: current.priorityPos,
             typeId = typeId ?: current.typeId,
             frequency = frequency ?: current.frequency,
-            periodicityPos = periodicityPos ?: current.periodicityPos,
-            done = done ?: current.done,
+            periodicityPos = periodicityPos ?: current.periodicityPos
         )
     }
 
@@ -144,7 +138,11 @@ class HabitEditViewModel @Inject constructor(
             frequency = frequency,
             periodicity = periodicity,
             color = state.selectedColor,
-            done = state.done
+            doneDates = if (habitId != null) {
+                _habits.value[habitId]?.doneDates ?: emptyList()
+            } else {
+                emptyList()
+            }
         )
 
         viewModelScope.launch {
@@ -187,8 +185,6 @@ class HabitEditViewModel @Inject constructor(
         _operationStatus.value = OperationStatus.InProgress
 
         viewModelScope.launch {
-            updateDoneStatus(true)
-
             val result = setHabitDoneUseCase(habitId)
 
             _operationStatus.value = if (result.isSuccess) OperationStatus.Success

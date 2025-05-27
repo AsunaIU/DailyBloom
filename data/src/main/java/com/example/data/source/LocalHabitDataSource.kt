@@ -67,7 +67,10 @@ class LocalHabitDataSource @Inject constructor (private val habitDao: HabitDao) 
 
             if (habitEntity != null) {
                 val habit = HabitEntity.toHabit(habitEntity)
-                val updatedHabit = habit.copy(done = true)
+
+                // Добавляем новую дату к существующим doneDates
+                val updatedDoneDates = habit.doneDates + date
+                val updatedHabit = habit.copy(doneDates = updatedDoneDates)
                 habitDao.insertHabit(HabitEntity.fromHabit(updatedHabit))
                 Result.success(Unit)
             } else {

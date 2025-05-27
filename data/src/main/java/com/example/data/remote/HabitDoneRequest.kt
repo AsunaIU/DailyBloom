@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class HabitDoneRequest(
-    @SerialName("uid") val uid: String,
+    @SerialName("habit_uid") val uid: String,
     @SerialName("date") val date: Long = System.currentTimeMillis()
 )

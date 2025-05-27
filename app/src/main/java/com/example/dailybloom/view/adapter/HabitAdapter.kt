@@ -157,13 +157,17 @@ class HabitAdapter(
         // Привязка объекта привычки к представлениям
         @SuppressLint("SetTextI18n")
         fun bind(habit: Habit, onClick: (Habit) -> Unit, viewModel: HabitListViewModel) {
-            Log.d(TAG, "Binding habit id=${habit.id}, done=${habit.done}")
+            Log.d(TAG, "Binding habit id=${habit.id}, done=${habit.done}, completions=${habit.getCompletionsInCurrentPeriod()}/${habit.frequency}")
+
             title.text = habit.title
             description.text = habit.description
             colorIndicator.setBackgroundColor(habit.color)
             priority.text = Priority.toDisplayString(habit.priority)
             type.text = HabitType.toDisplayString(habit.type)
-            frequency.text = "${habit.frequency} per ${habit.periodicity}"
+
+            val completions = habit.getCompletionsInCurrentPeriod()
+            frequency.text = "$completions/${habit.frequency} per ${habit.periodicity}"
+
             actionButton.text = if (habit.done) "Done" else "Do it"
 
             // Обработчик клика на весь элемент
@@ -171,39 +175,32 @@ class HabitAdapter(
 
             // Обработчик клика на кнопку действия
             actionButton.setOnClickListener {
-                Log.d(TAG, "Action button clicked for habit id=${habit.id}, done=${habit.done}")
+                Log.d(TAG, "Action button clicked for habit id=${habit.id}, done=${habit.done}, canDoMore=${habit.canDoMore()}")
 
-                if (!habit.done) {
-                    viewModel.setHabitDone(habit.id)
+                viewModel.setHabitDone(habit.id)
 
-                    if (habit.type == HabitType.GOOD) {
-                        Toast.makeText(
-                            itemView.context,
-                            "You are breathtaking!",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                // Сообщение в зависимости от типа привычки и степени ее выполнения
+                val toastMessage = getToastMessage(habit)
+                Toast.makeText(itemView.context, toastMessage, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        private fun getToastMessage(habit: Habit): String {
+            val remainingCompletions = habit.getRemainingCompletions()
+
+            return when (habit.type) {
+                HabitType.GOOD -> {
+                    if (habit.canDoMore()) {
+                        "This is worth doing $remainingCompletions more times"
                     } else {
-                        Toast.makeText(
-                            itemView.context,
-                            "Stop doing this",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        "You are amazing!"
                     }
-                } else {
-                    viewModel.setHabitDone(habit.id)
-
-                    if (habit.type == HabitType.GOOD) {
-                        Toast.makeText(
-                            itemView.context,
-                            "It is worth doing this ${habit.frequency} more times",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                }
+                HabitType.BAD -> {
+                    if (habit.canDoMore()) {
+                        "You can do this $remainingCompletions more times"
                     } else {
-                        Toast.makeText(
-                            itemView.context,
-                            "You can do this ${habit.frequency} more times",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        "Stop doing this"
                     }
                 }
             }

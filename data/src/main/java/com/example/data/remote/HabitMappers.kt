@@ -26,7 +26,7 @@ object HabitMappers {
             periodicity = Periodicity.DAY, // по умолчанию, так как его нет в модели API
             color = this.color ?: Color.BLUE,
             createdAt = this.date,
-            done = this.doneDates.isNotEmpty(),  // будет отмечено как выполненное, если в списке doneDates есть какие-либо даты
+            doneDates = this.doneDates,  // будет отмечено как выполненное, если в списке doneDates есть какие-либо даты
         )
     }
 
@@ -52,7 +52,7 @@ object HabitMappers {
             count = 1,
             date = this.createdAt,
             color = this.color,
-            doneDates = emptyList(), // пустые,т.к. управляются сервером
+            doneDates = this.doneDates, // пустые,т.к. управляются сервером
         )
     }
 }
