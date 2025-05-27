@@ -85,7 +85,17 @@
                 android:textSize="14sp"
                 android:layout_marginStart="4dp"/>
         </LinearLayout>
-
     </LinearLayout>
+
+    <!-- Action Button -->
+    <Button
+        android:id="@+id/btnHabitAction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Do It"
+        android:minWidth="90dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

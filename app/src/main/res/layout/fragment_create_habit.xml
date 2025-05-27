@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,6 +12,17 @@
         android:padding="32dp"
         android:orientation="vertical">
 
+        <ImageButton
+            android:id="@+id/btnDeleteHabit"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="end"
+            android:layout_marginBottom="8dp"
+            android:src="@drawable/ic_delete"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Delete habit"
+            android:scaleType="fitCenter"/>
+
         <!-- Заголовок -->
         <TextView
             android:layout_width="match_parent"
@@ -18,7 +30,6 @@
             android:text="Новая привычка"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:gravity="center"
             android:layout_marginBottom="16dp" />
 
         <!-- Название -->
