@@ -7,14 +7,21 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dailybloom.databinding.FragmentHabitsListBinding
-import com.example.dailybloom.model.Habit
-import com.example.dailybloom.model.HabitType
 import com.example.dailybloom.util.Constants
 import com.example.dailybloom.view.adapter.HabitAdapter
 import com.example.dailybloom.viewmodel.HabitListViewModel
+import com.example.domain.model.Habit
+import com.example.domain.model.HabitType
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class HabitListFragment : Fragment() {
 
     private val viewModel: HabitListViewModel by activityViewModels()
@@ -51,11 +58,14 @@ class HabitListFragment : Fragment() {
 
         setupRecyclerView()
         setupFilterButton()
-        observeViewModel()
+        collectFlows()
     }
 
     private fun setupRecyclerView() {
-        adapter = HabitAdapter { habit -> openEditScreen(habit) }
+        adapter = HabitAdapter(
+            onClick = { habit -> openEditScreen(habit) },
+            viewModel = viewModel
+        )
         binding.habitRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@HabitListFragment.adapter
@@ -67,6 +77,7 @@ class HabitListFragment : Fragment() {
             showFilterBottomSheet()
         }
     }
+
     private fun showFilterBottomSheet() {
         val filterBottomSheet = HabitFilterFragment.newInstance()
         filterBottomSheet.show(parentFragmentManager, HabitFilterFragment.TAG)
@@ -76,10 +87,15 @@ class HabitListFragment : Fragment() {
         fragmentListener?.onEditHabit(habit)
     }
 
-    private fun observeViewModel() {
-        viewModel.filteredHabits.observe(viewLifecycleOwner) { filteredHabits ->
-            val habitsOfCurrentType = filteredHabits.filter { it.type == habitType }
-            adapter.submitList(habitsOfCurrentType)
+    // New method to collect Flow instead of observing LiveData
+    private fun collectFlows() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.filteredHabits.collectLatest { filteredHabits ->
+                    val habitsOfCurrentType = filteredHabits.filter { it.type == habitType }
+                    adapter.submitList(habitsOfCurrentType)
+                }
+            }
         }
     }
 
@@ -98,5 +114,3 @@ class HabitListFragment : Fragment() {
         }
     }
 }
-
-

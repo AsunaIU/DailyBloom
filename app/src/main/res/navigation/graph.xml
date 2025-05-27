@@ -24,6 +24,14 @@
         android:id="@+id/createHabitFragment"
         android:name="com.example.dailybloom.view.CreateHabitFragment"
         android:label="Create Habit"
-        tools:layout="@layout/fragment_create_habit" />
+        tools:layout="@layout/fragment_create_habit" >
 
-</navigation>
+    <!-- Навигация обратно на HabitViewPagerFragment после сохранения/удаления -->
+    <action
+        android:id="@+id/action_createHabitFragment_to_habitViewPagerFragment"
+        app:destination="@id/habitViewPagerFragment"
+        app:popUpTo="@id/habitViewPagerFragment"
+        app:popUpToInclusive="false" />
+    </fragment>
+
+    </navigation>

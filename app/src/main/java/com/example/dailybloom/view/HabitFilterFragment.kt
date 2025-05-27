@@ -6,14 +6,20 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.dailybloom.databinding.FragmentHabitFilterBinding
-import com.example.dailybloom.model.Priority
 import com.example.dailybloom.viewmodel.viewmodeldata.FilterCriteria
 import com.example.dailybloom.viewmodel.HabitListViewModel
 import com.example.dailybloom.viewmodel.viewmodeldata.SortOption
+import com.example.domain.model.Priority
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
-
+@AndroidEntryPoint
 class HabitFilterFragment : BottomSheetDialogFragment()  {
 
     private var _binding: FragmentHabitFilterBinding? = null
@@ -21,7 +27,6 @@ class HabitFilterFragment : BottomSheetDialogFragment()  {
 
     private val viewModel: HabitListViewModel by activityViewModels()
 
-    // копия фильтра, накапливает изменения перед их применением
     private var localCriteria: FilterCriteria = FilterCriteria()
 
     override fun onCreateView(
@@ -36,11 +41,19 @@ class HabitFilterFragment : BottomSheetDialogFragment()  {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // копирует текущее значение filterCriteria из ViewModel в localCriteria
-        viewModel.filterCriteria.value?.let { localCriteria = it.copy() }
-
-        updateUIFromCriteria(localCriteria)
+        collectFlows()
         setupListeners()
+    }
+
+    private fun collectFlows() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.filterCriteria.collectLatest { criteria ->
+                    localCriteria = criteria.copy()
+                    updateUIFromCriteria(localCriteria)
+                }
+            }
+        }
     }
 
     companion object {
@@ -54,7 +67,6 @@ class HabitFilterFragment : BottomSheetDialogFragment()  {
     private fun setupListeners() {
         with(binding) {
 
-            // слушатели нажатий обновляют localFilterCriteria
             etSearch.doAfterTextChanged { text ->
                 localCriteria = localCriteria.copy(searchQuery = text.toString())
             }
@@ -99,7 +111,7 @@ class HabitFilterFragment : BottomSheetDialogFragment()  {
             if (chipLow.isChecked) selectedPriorities.add(Priority.LOW)
         }
 
-        localCriteria = localCriteria.copy (priorityFilters = selectedPriorities)
+        localCriteria = localCriteria.copy(priorityFilters = selectedPriorities)
     }
 
     private fun applyFiltersToViewModel() {

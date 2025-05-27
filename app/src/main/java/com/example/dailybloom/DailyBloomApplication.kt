@@ -1,13 +1,7 @@
 package com.example.dailybloom
 
 import android.app.Application
-import com.example.dailybloom.data.local.HabitDatabase
-import com.example.dailybloom.data.local.HabitRepository
+import dagger.hilt.android.HiltAndroidApp
 
-class DailyBloomApplication : Application() {
-    override fun onCreate() {
-        super.onCreate()
-        val database = HabitDatabase.getDatabase(this)
-        HabitRepository.initialize(database)
-    }
-}
+@HiltAndroidApp
+class DailyBloomApplication : Application()
