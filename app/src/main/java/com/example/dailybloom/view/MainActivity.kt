@@ -11,12 +11,17 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.dailybloom.R
 import com.example.dailybloom.databinding.ActivityMainBinding
-import com.example.dailybloom.model.Habit
 import com.example.dailybloom.util.Constants
+import com.example.domain.model.Habit
+import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.navigation.NavigationView
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(),
     HabitViewPagerFragment.HabitFragmentListener,
     CreateHabitFragment.CreateHabitListener,
@@ -53,6 +58,21 @@ class MainActivity : AppCompatActivity(),
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         binding.navView.setupWithNavController(navController)
+
+        val headerView = binding.navView.getHeaderView(0)
+        val circleImageView: ShapeableImageView = headerView.findViewById(R.id.circlePlaceholder)
+
+
+        Glide.with(this)
+            .load(getString(R.string.random_url))
+            .placeholder(R.drawable.circle_user_placeholder)
+            .error(R.drawable.circle_error_placeholder)
+            .skipMemoryCache(true)                // не кэшировать в памяти
+            .diskCacheStrategy(DiskCacheStrategy.NONE) // не кэшировать на диске
+            .circleCrop()
+            .into(circleImageView)
+
+
         binding.navView.setNavigationItemSelectedListener(this)
     }
 
@@ -84,7 +104,7 @@ class MainActivity : AppCompatActivity(),
 
     override fun onEditHabit(habit: Habit) {
         val bundle = Bundle().apply {
-            putParcelable(Constants.ARG_HABIT, habit)
+            putString(Constants.ARG_HABIT_ID, habit.id)
         }
         navController.navigate(R.id.createHabitFragment, bundle)
     }

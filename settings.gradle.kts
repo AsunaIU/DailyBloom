@@ -21,4 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "DailyBloom"
 include(":app")
- 
+include(":data")
+include(":domain")

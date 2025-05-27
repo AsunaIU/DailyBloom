@@ -1,6 +1,6 @@
 package com.example.dailybloom.viewmodel.viewmodeldata
 
-import com.example.dailybloom.model.Priority
+import com.example.domain.model.Priority
 
 data class FilterCriteria(
     val searchQuery: String = "",
