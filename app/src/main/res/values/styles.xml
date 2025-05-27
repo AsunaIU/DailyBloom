@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="CustomFilterChip" parent="@style/Widget.MaterialComponents.Chip.Choice">
+
+        <!-- прозрачный фон по‑умолчанию -->
+        <item name="chipSurfaceColor">@android:color/transparent</item>
+
+        <!-- селектор для pressed/checked/normal -->
+        <item name="chipBackgroundColor">@color/chip_selector</item>
+
+        <item name="chipStrokeColor">@color/chip_contour</item>
+        <item name="chipStrokeWidth">1dp</item>
+    </style>
+
+    <!-- circular ShapeableImageView -->
+    <style name="CircleImageView" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="ShapeAppearanceOverlay.Circle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+</resources>

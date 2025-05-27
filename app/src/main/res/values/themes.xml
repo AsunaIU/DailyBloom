@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.DailyBloom" parent="Theme.Material3.DayNight">
+
+    <style name="Theme.DailyBloom" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <!-- Отключает стандартный ActionBar-->
+        <!-- <item name="windowActionBar">false</item>-->
+        <!-- <item name="windowNoTitle">true</item>-->
 
         <!-- Base colors -->
         <item name="colorPrimary">@color/primary</item>
@@ -14,7 +19,8 @@
         <item name="textAppearanceBodyLarge">@style/TextAppearance.Material3.BodyLarge</item>
 
         <!-- Shapes -->
-        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Material3.SmallComponent</item>
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Material3.SmallComponent
+        </item>
 
     </style>
 </resources>

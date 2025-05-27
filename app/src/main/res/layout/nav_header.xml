@@ -1,25 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="176dp"
-    android:background="@color/design_default_color_primary"
-    android:gravity="bottom"
-    android:orientation="vertical"
+    android:background="@color/primary"
     android:padding="16dp"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/circlePlaceholder"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:contentDescription="Profile picture placeholder"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:scaleType="centerCrop"
+        app:srcCompat="@drawable/circle_user_placeholder"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Circle" />
+
     <TextView
+        android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="20dp"
         android:text="DailyBloom"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:textSize="20sp" />
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="@+id/circlePlaceholder"
+        app:layout_constraintTop_toBottomOf="@+id/circlePlaceholder" />
 
     <TextView
+        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Grow your habits daily" />
+        android:text="Grow your habits daily"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        app:layout_constraintStart_toStartOf="@+id/textView2"
+        android:layout_marginTop="4dp" />
 
-</LinearLayout>
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="188dp"
+        android:layout_height="153dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/property_1_andromeda" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

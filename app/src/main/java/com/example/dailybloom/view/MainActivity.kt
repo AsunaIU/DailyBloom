@@ -11,13 +11,19 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.dailybloom.R
 import com.example.dailybloom.databinding.ActivityMainBinding
-import com.example.dailybloom.model.Habit
+import com.example.dailybloom.util.Constants
+import com.example.domain.model.Habit
+import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.navigation.NavigationView
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(),
-    HabitTrackerFragment.HabitFragmentListener,
+    HabitViewPagerFragment.HabitFragmentListener,
     CreateHabitFragment.CreateHabitListener,
     NavigationView.OnNavigationItemSelectedListener {
 
@@ -33,8 +39,7 @@ class MainActivity : AppCompatActivity(),
 
         setSupportActionBar(binding.toolbar)
 
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
 
         toggle = ActionBarDrawerToggle(
@@ -48,18 +53,32 @@ class MainActivity : AppCompatActivity(),
         toggle.syncState()
 
         appBarConfiguration = AppBarConfiguration(
-            setOf(R.id.habitTrackerFragment, R.id.appInfoFragment),
+            setOf(R.id.habitViewPagerFragment, R.id.infoFragment),
             binding.drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         binding.navView.setupWithNavController(navController)
+
+        val headerView = binding.navView.getHeaderView(0)
+        val circleImageView: ShapeableImageView = headerView.findViewById(R.id.circlePlaceholder)
+
+
+        Glide.with(this)
+            .load(getString(R.string.random_url))
+            .placeholder(R.drawable.circle_user_placeholder)
+            .error(R.drawable.circle_error_placeholder)
+            .skipMemoryCache(true)                // не кэшировать в памяти
+            .diskCacheStrategy(DiskCacheStrategy.NONE) // не кэшировать на диске
+            .circleCrop()
+            .into(circleImageView)
+
+
         binding.navView.setNavigationItemSelectedListener(this)
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        // Handle navigation view item clicks
         when (item.itemId) {
-            R.id.habitTrackerFragment, R.id.appInfoFragment -> {
+            R.id.habitViewPagerFragment, R.id.infoFragment -> {
                 navController.navigate(item.itemId)
             }
         }
@@ -85,12 +104,16 @@ class MainActivity : AppCompatActivity(),
 
     override fun onEditHabit(habit: Habit) {
         val bundle = Bundle().apply {
-            putParcelable("habit", habit)
+            putString(Constants.ARG_HABIT_ID, habit.id)
         }
         navController.navigate(R.id.createHabitFragment, bundle)
     }
 
     override fun onHabitSaved() {
+        navController.navigateUp()
+    }
+
+    override fun onHabitDeleted() {
         navController.navigateUp()
     }
 }

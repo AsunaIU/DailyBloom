@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Фоновый круг -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/placeholder_bg" />
+            <size
+                android:width="64dp"
+                android:height="64dp" />
+        </shape>
+    </item>
+
+    <!-- Иконка по центру -->
+    <item
+        android:drawable="@drawable/ic_user"
+        android:width="32dp"
+        android:height="32dp"
+        android:gravity="center" />
+
+</layer-list>

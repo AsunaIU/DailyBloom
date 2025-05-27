@@ -10,7 +10,7 @@
     android:layout_marginTop="16dp">
 
     <!-- Градиентный фон -->
-    <com.example.dailybloom.view.ColorGradientView
+    <com.example.dailybloom.view.color.ColorGradientView
         android:id="@+id/colorGradientView"
         android:layout_width="match_parent"
         android:layout_height="50dp" />
