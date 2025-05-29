@@ -29,6 +29,13 @@ mockito = "5.11.0"
 mockitoKotlin = "5.1.0"
 junit-jupiter = "5.10.2"
 
+# New testing versions
+androidx-test-runner = "1.6.2"
+androidx-test-rules = "1.6.1"
+espresso-contrib = "3.6.1"
+fragment-testing = "1.8.6"
+arch-core-testing = "2.2.0"
+mockito-android = "5.11.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,6 +58,17 @@ androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecyc
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+
+# New Android Testing Dependencies
+androidx-espresso-contrib = { group = "androidx.test.espresso", name = "espresso-contrib", version.ref = "espresso-contrib" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidx-test-runner" }
+androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "androidx-test-rules" }
+androidx-fragment-testing = { group = "androidx.fragment", name = "fragment-testing", version.ref = "fragment-testing" }
+androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "arch-core-testing" }
+mockito-android = { group = "org.mockito", name = "mockito-android", version.ref = "mockito-android" }
+
+# Hilt Testing
+hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
 
 # Модульные тесты (JVM)
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit-jupiter" }

@@ -91,14 +91,8 @@ dependencies {
     kapt(libs.androidx.room.compiler)
 
     // Coroutines
-    implementation (libs.kotlinx.coroutines.android)
-    implementation (libs.kotlinx.coroutines.core)
-
-    // Testing
-    // Инструментальные тесты (Android)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.core)
 
     // Dagger-Hilt
     implementation(libs.hilt.android)
@@ -107,4 +101,34 @@ dependencies {
     // Glide for navbar image
     implementation(libs.glide)
     kapt(libs.glide.compiler)
+
+    // Unit Testing (JVM)
+    testImplementation(libs.junit)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.kotlinx.coroutines.test)
+
+    // Android Instrumented Testing
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.espresso.contrib)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+
+    // Fragment Testing
+    androidTestImplementation(libs.androidx.fragment.testing)
+
+    // Hilt Testing
+    androidTestImplementation(libs.hilt.android.testing)
+    kaptAndroidTest(libs.hilt.android.compiler)
+
+    // Architecture Components Testing
+    androidTestImplementation(libs.androidx.arch.core.testing)
+
+    // Coroutines Testing for Android Tests
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+
+    // Mockito for Android
+    androidTestImplementation(libs.mockito.android)
 }

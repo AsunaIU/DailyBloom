@@ -2,12 +2,14 @@ package com.example.domain.usecase
 
 import com.example.domain.repository.HabitRepository
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.reset
 
 /** Тесты проверяют, что:
  *  1) при ошибке RemoveHabitUseCase.invoke() возвращает Result.failure с тем же исключением
