@@ -19,10 +19,12 @@ class HabitRepositoryImpl @Inject constructor(
     private val appScope: CoroutineScope
 ) : HabitRepository {
 
+    companion object {
+        private const val TAG = "HabitRepository"
+    }
+
     init {
-        Log.d("HabitRepositoryImpl", "Initializing repository")
         appScope.launch {
-            Log.d("HabitRepositoryImpl", "Starting initial habits refresh")
             refreshHabits()
         }
     }
@@ -35,14 +37,11 @@ class HabitRepositoryImpl @Inject constructor(
                 for (habit in remoteHabits) {
                     localDataSource.addHabit(habit)
                 }
-                Log.d("HabitRepositoryImpl", "Successfully refreshed ${remoteHabits.size} habits from remote")
-            } else {
-                Log.d("HabitRepositoryImpl", "Failed to refresh habits from remote, trying locally")
             }
         } catch (ce: kotlinx.coroutines.CancellationException) {
             throw ce
         } catch (e: Exception) {
-            Log.e("HabitRepositoryImpl", "Exception while refreshing habits", e)
+            Log.e(TAG, "Exception while refreshing habits", e)
         }
     }
 
@@ -64,16 +63,13 @@ class HabitRepositoryImpl @Inject constructor(
     override suspend fun addHabit(habit: Habit): Result<Boolean> {
         return try {
             val remoteResult = remoteDataSource.addHabit(habit)
-            Log.d("api", "remote add status ${remoteResult.isSuccess}")
             if (remoteResult.isSuccess) {
-                Log.d("api", "remote successful")
                 val remoteHabit = remoteResult.getOrNull()
                 if (remoteHabit != null) {
                     localDataSource.addHabit(remoteHabit)
-                    Log.d("api", "local successful")
                     Result.success(true)
                 } else {
-                    throw Exception("Failed to save to remote: server return null")
+                    throw Exception("Failed to save to remote: server returned null")
                 }
             } else {
                 throw Exception("Failed to save to remote: ${remoteResult.exceptionOrNull()?.message}")
@@ -81,7 +77,7 @@ class HabitRepositoryImpl @Inject constructor(
         } catch (ce: kotlinx.coroutines.CancellationException) {
             throw ce
         } catch (e: Exception) {
-            Log.e("HabitRepositoryImpl", "Exception while saving habit: ${e.message}", e)
+            Log.e(TAG, "Exception while saving habit: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -95,7 +91,7 @@ class HabitRepositoryImpl @Inject constructor(
                     localDataSource.updateHabit(habitId, remoteUpdatedHabit)
                     Result.success(true)
                 } else {
-                    throw Exception("Failed to save to remote: server return null")
+                    throw Exception("Failed to save to remote: server returned null")
                 }
             } else {
                 throw Exception("Failed to save to remote: ${remoteResult.exceptionOrNull()?.message}")
@@ -103,7 +99,7 @@ class HabitRepositoryImpl @Inject constructor(
         } catch (ce: kotlinx.coroutines.CancellationException) {
             throw ce
         } catch (e: Exception) {
-            Log.e("HabitRepositoryImpl", "Exception while updating habit: ${e.message}", e)
+            Log.e(TAG, "Exception while updating habit: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -124,23 +120,17 @@ class HabitRepositoryImpl @Inject constructor(
         } catch (ce: kotlinx.coroutines.CancellationException) {
             throw ce
         } catch (e: Exception) {
-            Log.e("HabitRepositoryImpl", "Exception while deleting habit: ${e.message}", e)
+            Log.e(TAG, "Exception while deleting habit: ${e.message}", e)
             Result.failure(e)
         }
     }
 
     override suspend fun setHabitDone(habitId: String, date: Long): Result<Boolean> {
         return try {
-            Log.d("HabitRepositoryImpl", "Setting habit done: $habitId at $date")
             val remoteResult = remoteDataSource.setHabitDone(habitId, date)
-
             if (remoteResult.isSuccess) {
-                Log.d("HabitRepositoryImpl", "Remote set habit done successful for habit: $habitId")
                 val localResult = localDataSource.setHabitDone(habitId, date)
-
                 if (localResult.isSuccess) {
-                    Log.d("HabitRepositoryImpl", "Local set habit done successful for habit: $habitId")
-                    // Обновить данные с сервера -> получить обновленные doneDates
                     refreshHabits()
                     Result.success(true)
                 } else {
@@ -152,7 +142,7 @@ class HabitRepositoryImpl @Inject constructor(
         } catch (ce: kotlinx.coroutines.CancellationException) {
             throw ce
         } catch (e: Exception) {
-            Log.e("HabitRepositoryImpl", "Exception while marking habit as done: ${e.message}", e)
+            Log.e(TAG, "Exception while marking habit as done: ${e.message}", e)
             Result.failure(e)
         }
     }

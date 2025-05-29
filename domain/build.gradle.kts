@@ -32,6 +32,13 @@ android {
     }
 }
 
+// Все тесты модуля используют JUnit 5
+tasks.withType<Test> {
+    useJUnitPlatform()
+    // Разрешение динамической загрузки Java-агентов (ByteBuddy и др.)
+    jvmArgs("-XX:+EnableDynamicAgentLoading")
+}
+
 dependencies {
 
     // Базовые зависимости
@@ -39,10 +46,13 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
 
-    // Для тестирования
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    // Testing
+    // Модульные тесты (JVM)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.mockito.junit.jupiter)
+    testImplementation(libs.kotlinx.coroutines.test)
 
     // Если domain использует Hilt только для аннотаций (без внедрения)
     compileOnly(libs.hilt.android)
