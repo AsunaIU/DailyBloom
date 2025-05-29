@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -19,7 +21,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.example.dailybloom.HiltTestRunner"
     }
 
     buildTypes {
@@ -131,4 +133,9 @@ dependencies {
 
     // Mockito for Android
     androidTestImplementation(libs.mockito.android)
+}
+
+// Отключаем state-tracking для connectedAndroidTest
+tasks.withType<DeviceProviderInstrumentTestTask>().configureEach {
+    doNotTrackState("resultsDir")
 }
