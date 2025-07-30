@@ -46,14 +46,14 @@ class HabitAdapter(
 
         if (unfulfilledHabits.isNotEmpty()) {
             Log.d(TAG, "submitList: adding Unfulfilled section with ${unfulfilledHabits.size} items")
-            newItems.add(ListItem.SectionHeader("Unfulfilled"))
+            newItems.add(ListItem.SectionHeader("В процессе"))
             unfulfilledHabits.forEach { newItems.add(ListItem.HabitItem(it)) }
         }
 
         // фильтрация невыполненных привычек
         if (completedHabits.isNotEmpty()) {
             Log.d(TAG, "submitList: adding Completed section with ${completedHabits.size} items")
-            newItems.add(ListItem.SectionHeader("Completed"))
+            newItems.add(ListItem.SectionHeader("Выполнено"))
             completedHabits.forEach { newItems.add(ListItem.HabitItem(it)) }
         }
 

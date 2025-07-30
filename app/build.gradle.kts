@@ -1,11 +1,13 @@
+import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.secretsPlugin)
-    alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -19,7 +21,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.example.dailybloom.HiltTestRunner"
     }
 
     buildTypes {
@@ -91,13 +93,8 @@ dependencies {
     kapt(libs.androidx.room.compiler)
 
     // Coroutines
-    implementation (libs.kotlinx.coroutines.android)
-    implementation (libs.kotlinx.coroutines.core)
-
-    // Testing
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.core)
 
     // Dagger-Hilt
     implementation(libs.hilt.android)
@@ -106,4 +103,39 @@ dependencies {
     // Glide for navbar image
     implementation(libs.glide)
     kapt(libs.glide.compiler)
+
+    // Unit Testing (JVM)
+    testImplementation(libs.junit)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.kotlinx.coroutines.test)
+
+    // Android Instrumented Testing
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.espresso.contrib)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+
+    // Fragment Testing
+    debugImplementation(libs.androidx.fragment.testing)
+
+    // Hilt Testing
+    androidTestImplementation(libs.hilt.android.testing)
+    kaptAndroidTest(libs.hilt.android.compiler)
+
+    // Architecture Components Testing
+    androidTestImplementation(libs.androidx.arch.core.testing)
+
+    // Coroutines Testing for Android Tests
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+
+    // Mockito for Android
+    androidTestImplementation(libs.mockito.android)
+}
+
+// Отключаем state-tracking для connectedAndroidTest
+tasks.withType<DeviceProviderInstrumentTestTask>().configureEach {
+    doNotTrackState("resultsDir")
 }
