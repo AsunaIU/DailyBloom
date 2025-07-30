@@ -5,7 +5,7 @@
 ![Главный экран](assets/images/main_screen.png)
 ![Главный экран](assets/images/main_screen_bad.png)
 ![Экран меню](assets/images/habits_menu.png)
-![Экран редактирвоания](assets/images/create_habit.png)
+![Экран редактирования](assets/images/create_habit.png)
 
 ---
 ## 📖 Оглавление
