@@ -5,6 +5,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragment
 import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.Espresso.onView
@@ -107,6 +108,9 @@ class CreateHabitFragmentTest {
     @Test
     fun radio_group_selection_works_correctly() {
         scenario = launchFragment<CreateHabitFragment>()
+
+        // Проверка состояния фрагмента
+        scenario.moveToState(Lifecycle.State.RESUMED)
 
         onView(withId(R.id.rbHabitGood)).perform(click())
         onView(withId(R.id.rbHabitGood)).check(matches(isChecked()))

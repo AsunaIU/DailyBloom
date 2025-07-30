@@ -5,10 +5,6 @@ import android.content.Context
 import androidx.test.runner.AndroidJUnitRunner
 import dagger.hilt.android.testing.HiltTestApplication
 
-/**
- * Custom test runner for Hilt tests.
- * This replaces the default Application with HiltTestApplication.
- */
 class HiltTestRunner : AndroidJUnitRunner() {
 
     override fun newApplication(

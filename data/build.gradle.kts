@@ -15,7 +15,7 @@ android {
 
         // Добавлены buildConfig-поля - это будет залито на гит и все получат токен - нехорошо
         buildConfigField("String", "BASE_URL", "\"https://droid-test-server.doubletapp.ru/api/\"")
-        buildConfigField("String", "API_TOKEN", "\"95f95c95-7a2a-4255-aabb-b0cb91697f62\"")
+        buildConfigField("String", "API_TOKEN", "\"b5eea0d0-38f8-40a8-9c59-823daaebff5e\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")

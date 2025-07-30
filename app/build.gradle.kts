@@ -119,7 +119,7 @@ dependencies {
     androidTestImplementation(libs.androidx.test.rules)
 
     // Fragment Testing
-    androidTestImplementation(libs.androidx.fragment.testing)
+    debugImplementation(libs.androidx.fragment.testing)
 
     // Hilt Testing
     androidTestImplementation(libs.hilt.android.testing)
